@@ -3,6 +3,7 @@ import { normalizeCustomLevel } from './levels.js';
 const PROGRESS_KEY = 'pixeltype.progress.v1';
 const CUSTOM_LEVELS_KEY = 'pixeltype.customLevels.v1';
 const LANGUAGE_KEY = 'pixeltype.language.v1';
+const AUDIO_KEY = 'pixeltype.audio.v1';
 
 export function createMemoryStorage() {
   const values = new Map();
@@ -86,6 +87,15 @@ export function loadLanguage(storage = getBrowserStorage()) {
 export function saveLanguage(storage, language) {
   storage.setItem(LANGUAGE_KEY, language);
   return language;
+}
+
+export function loadAudioEnabled(storage = getBrowserStorage()) {
+  return storage.getItem(AUDIO_KEY) !== 'false';
+}
+
+export function saveAudioEnabled(storage, enabled) {
+  storage.setItem(AUDIO_KEY, String(enabled));
+  return enabled;
 }
 
 function readJson(storage, key, fallback) {

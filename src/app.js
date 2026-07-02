@@ -42,8 +42,8 @@
       saveLevel: '保存关卡',
       preview: '预览',
       noCustomLevels: '还没有自定义关卡。',
-      speechOn: '语音开',
-      speechOff: '语音关',
+      audioOn: '声音开',
+      audioOff: '声音关',
       difficultySlow: '慢速',
       difficultyNormal: '普通',
       difficultyChallenge: '挑战',
@@ -107,8 +107,8 @@
       saveLevel: 'Save Level',
       preview: 'Preview',
       noCustomLevels: 'No custom levels yet.',
-      speechOn: 'Voice On',
-      speechOff: 'Voice Off',
+      audioOn: 'Sound On',
+      audioOff: 'Sound Off',
       difficultySlow: 'Slow',
       difficultyNormal: 'Normal',
       difficultyChallenge: 'Challenge',
@@ -147,13 +147,13 @@
     progress: 'pixeltype.progress.v1',
     customLevels: 'pixeltype.customLevels.v1',
     language: 'pixeltype.language.v1',
-    speech: 'pixeltype.speech.v1',
+    audio: 'pixeltype.audio.v1',
   };
 
   const state = {
     view: 'home',
     language: loadValue(STORAGE_KEYS.language, 'zh-CN'),
-    speechEnabled: loadValue(STORAGE_KEYS.speech, 'true') !== 'false',
+    audioEnabled: loadAudioEnabled(),
     progress: loadJson(STORAGE_KEYS.progress, { unlockedLevelIds: ['level-1'], levelStars: {} }),
     customLevels: loadJson(STORAGE_KEYS.customLevels, []),
     currentLevel: null,
@@ -209,7 +209,7 @@
           </div>
           <div class="toolbar">
             <button class="pixel-btn" data-action="toggle-language">${state.language === 'zh-CN' ? 'English' : '中文'}</button>
-            <button class="pixel-btn" data-action="toggle-speech">${state.speechEnabled ? tr('speechOn') : tr('speechOff')}</button>
+            <button class="pixel-btn" data-action="toggle-audio">${state.audioEnabled ? tr('audioOn') : tr('audioOff')}</button>
           </div>
         </header>
         ${content}
@@ -379,7 +379,7 @@
       button.addEventListener('click', () => {
         const action = button.dataset.action;
         if (action === 'toggle-language') toggleLanguage();
-        if (action === 'toggle-speech') toggleSpeech();
+        if (action === 'toggle-audio') toggleAudio();
         if (action === 'show-map') showMap();
         if (action === 'home') showHome();
         if (action === 'show-editor') showEditor();
@@ -416,9 +416,9 @@
     render();
   }
 
-  function toggleSpeech() {
-    state.speechEnabled = !state.speechEnabled;
-    localStorage.setItem(STORAGE_KEYS.speech, String(state.speechEnabled));
+  function toggleAudio() {
+    state.audioEnabled = !state.audioEnabled;
+    localStorage.setItem(STORAGE_KEYS.audio, String(state.audioEnabled));
     render();
   }
 
@@ -439,6 +439,11 @@
   function handleMissionKey(key) {
     const previousFeedback = state.session.feedback;
     state.session = handleTypingKey(state.session, key);
+    if (state.session.feedback === 'error') {
+      playFeedbackSound('error');
+    } else if (state.session.feedback === 'correct' || state.session.feedback === 'target-complete') {
+      playFeedbackSound('correct');
+    }
     if (state.session.feedback === 'error' && previousFeedback !== 'error') {
       speak(tr('errorHint'), state.language);
     }
@@ -578,12 +583,63 @@
   }
 
   function speak(text, language) {
-    if (!state.speechEnabled || !('speechSynthesis' in window)) return;
+    if (!state.audioEnabled || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = language || state.language;
     utterance.rate = 0.92;
     window.speechSynthesis.speak(utterance);
+  }
+
+  function playFeedbackSound(kind) {
+    if (!state.audioEnabled) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const config = getFeedbackSound(kind);
+    const audioContext = getAudioContext(AudioContextClass);
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const now = audioContext.currentTime;
+
+    oscillator.type = config.type;
+    oscillator.frequency.setValueAtTime(config.frequency, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(config.gain, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + config.duration + 0.01);
+  }
+
+  function getAudioContext(AudioContextClass) {
+    if (!state.audioContext) {
+      state.audioContext = new AudioContextClass();
+    }
+    if (state.audioContext.state === 'suspended') {
+      state.audioContext.resume();
+    }
+    return state.audioContext;
+  }
+
+  function getFeedbackSound(kind) {
+    const sounds = {
+      correct: {
+        type: 'sine',
+        frequency: 660,
+        duration: 0.055,
+        gain: 0.05,
+      },
+      error: {
+        type: 'square',
+        frequency: 180,
+        duration: 0.09,
+        gain: 0.045,
+      },
+    };
+    return sounds[kind] || sounds.correct;
   }
 
   function renderStars(count) {
@@ -620,6 +676,15 @@
     } catch {
       return fallback;
     }
+  }
+
+  function loadAudioEnabled() {
+    const combined = localStorage.getItem(STORAGE_KEYS.audio);
+    if (combined !== null) return combined !== 'false';
+
+    const legacySpeech = localStorage.getItem('pixeltype.speech.v1');
+    const legacySound = localStorage.getItem('pixeltype.sound.v1');
+    return legacySpeech !== 'false' && legacySound !== 'false';
   }
 
   function escapeHtml(value) {
