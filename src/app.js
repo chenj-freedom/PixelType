@@ -14,6 +14,10 @@
     'zh-CN': {
       appTitle: '像素打字岛',
       appSubtitle: '跟着小向导，学会英文键盘打字',
+      homeIntro: '先从 F 和 J 开始，按学习顺序逐步解锁地图关卡。',
+      guideLabel: '向导',
+      switchToChinese: '中文',
+      switchToEnglish: 'English',
       startAdventure: '开始闯关',
       freePractice: '自由练习',
       editLevels: '编辑关卡',
@@ -38,10 +42,17 @@
       resultContinue: '回到地图',
       editorTitle: '关卡编辑器',
       editorName: '关卡名称',
+      editorDefaultTitle: '动物单词',
       editorTargets: '练习内容',
       editorTargetsHint: '用逗号或换行分隔，例如 cat, dog, fish',
       editorDifficulty: '难度',
       editorNpcLanguage: 'NPC 语音',
+      editorPreviewSpeech: '小向导：请输入这个动物单词！',
+      customLevelDefaultTitle: '自定义关卡',
+      customLevelDefaultSubtitle: '自定义练习',
+      customLevelDefaultNpcLine: '看准目标，一个字母一个字母输入。',
+      languageChinese: '中文',
+      languageEnglish: 'English',
       saveLevel: '保存关卡',
       preview: '预览',
       noCustomLevels: '还没有自定义关卡。',
@@ -82,6 +93,10 @@
     'en-US': {
       appTitle: 'PixelType Island',
       appSubtitle: 'Learn English keyboard typing with your guide',
+      homeIntro: 'Start with F and J, then unlock map levels in learning order.',
+      guideLabel: 'Guide',
+      switchToChinese: 'Chinese',
+      switchToEnglish: 'English',
       startAdventure: 'Start Adventure',
       freePractice: 'Free Practice',
       editLevels: 'Level Editor',
@@ -106,10 +121,17 @@
       resultContinue: 'Back to Map',
       editorTitle: 'Level Editor',
       editorName: 'Level Name',
+      editorDefaultTitle: 'Animal Words',
       editorTargets: 'Targets',
       editorTargetsHint: 'Separate with commas or lines, such as cat, dog, fish',
       editorDifficulty: 'Difficulty',
       editorNpcLanguage: 'NPC Voice',
+      editorPreviewSpeech: 'Guide: Type this animal word!',
+      customLevelDefaultTitle: 'Custom Level',
+      customLevelDefaultSubtitle: 'Custom Practice',
+      customLevelDefaultNpcLine: 'Look at the target and type one letter at a time.',
+      languageChinese: 'Chinese',
+      languageEnglish: 'English',
       saveLevel: 'Save Level',
       preview: 'Preview',
       noCustomLevels: 'No custom levels yet.',
@@ -218,7 +240,7 @@
             </div>
           </div>
           <div class="toolbar">
-            <button class="pixel-btn" data-action="toggle-language">${state.language === 'zh-CN' ? 'English' : '中文'}</button>
+            <button class="pixel-btn" data-action="toggle-language">${state.language === 'zh-CN' ? tr('switchToEnglish') : tr('switchToChinese')}</button>
             <button class="pixel-btn" data-action="toggle-audio">${state.audioEnabled ? tr('audioOn') : tr('audioOff')}</button>
           </div>
         </header>
@@ -233,7 +255,7 @@
       <div class="hero">
         <div class="hero-copy">
           <h2>${tr('appTitle')}</h2>
-          <p>${tr('appSubtitle')}。先从 F 和 J 开始，按学习顺序逐步解锁地图关卡。</p>
+          <p>${tr('appSubtitle')}. ${tr('homeIntro')}</p>
           <div class="hero-actions">
             <button class="pixel-btn primary" data-action="show-map">${tr('startAdventure')}</button>
             <button class="pixel-btn secondary" data-action="start-free">${tr('freePractice')}</button>
@@ -306,7 +328,7 @@
           <div class="stat-box"><span>${tr('stars')}</span>${renderStars(stats.stars)}</div>
         </div>
         <section class="mission-stage">
-          <div class="mission-npc">向导</div>
+          <div class="mission-npc">${tr('guideLabel')}</div>
           <div class="mission-speech">${escapeHtml(npcText)}</div>
           <div class="target-card ${session.feedback === 'error' ? 'error' : ''}">${escapeHtml(target)}</div>
           <div class="input-dock">
@@ -333,7 +355,7 @@
           <form class="form-card" id="level-form">
             <label class="field">
               ${tr('editorName')}
-              <input name="title" value="动物单词">
+              <input name="title" value="${tr('editorDefaultTitle')}">
             </label>
             <label class="field">
               ${tr('editorTargets')}
@@ -350,8 +372,8 @@
             <label class="field">
               ${tr('editorNpcLanguage')}
               <select name="npcLanguage">
-                <option value="zh-CN">中文</option>
-                <option value="en-US">English</option>
+                <option value="zh-CN">${tr('languageChinese')}</option>
+                <option value="en-US">${tr('languageEnglish')}</option>
               </select>
             </label>
             <button class="pixel-btn primary" type="submit">${tr('saveLevel')}</button>
@@ -359,7 +381,7 @@
           <aside class="preview-card">
             <h3>${tr('preview')}</h3>
             <div class="target-card" style="position:static;transform:none;margin:18px auto;">cat</div>
-            <div class="speech">小向导：请输入这个动物单词！</div>
+            <div class="speech">${tr('editorPreviewSpeech')}</div>
           </aside>
         </div>
       </div>
@@ -601,14 +623,16 @@
     return {
       id: `custom-${Date.now()}`,
       order: BUILT_IN_LEVELS.length + state.customLevels.length + 1,
-      title: String(input.title || '').trim() || '自定义关卡',
-      subtitle: '自定义练习',
+      title: String(input.title || '').trim() || tr('customLevelDefaultTitle'),
+      subtitle: tr('customLevelDefaultSubtitle'),
       focusKeys,
       targets: targets.length ? targets : ['cat', 'dog'],
       targetAccuracy: input.difficulty === 'challenge' ? 92 : 85,
       difficulty: input.difficulty,
       npcLanguage: input.npcLanguage,
-      npcLine: input.npcLanguage === 'en-US' ? 'Type the target carefully.' : '看准目标，一个字母一个字母输入。',
+      npcLine: input.npcLanguage === 'en-US'
+        ? STRINGS['en-US'].customLevelDefaultNpcLine
+        : STRINGS['zh-CN'].customLevelDefaultNpcLine,
       isCustom: true,
     };
   }
