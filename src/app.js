@@ -23,6 +23,9 @@
       customArea: '自定义关卡',
       locked: '未解锁',
       startLevel: '开始',
+      introListening: '正在听小向导介绍...',
+      introReady: '介绍听完了，可以开始练习。',
+      beginPractice: '开始练习',
       currentTarget: '当前目标',
       typedInput: '当前输入',
       accuracy: '准确率',
@@ -88,6 +91,9 @@
       customArea: 'Custom Levels',
       locked: 'Locked',
       startLevel: 'Start',
+      introListening: 'Listening to the guide...',
+      introReady: 'The introduction is finished. Ready to practice.',
+      beginPractice: 'Start Practice',
       currentTarget: 'Target',
       typedInput: 'Input',
       accuracy: 'Accuracy',
@@ -158,6 +164,9 @@
     customLevels: loadJson(STORAGE_KEYS.customLevels, []),
     currentLevel: null,
     session: null,
+    introStatus: 'idle',
+    introText: '',
+    introToken: 0,
     result: null,
   };
 
@@ -165,6 +174,7 @@
 
   document.addEventListener('keydown', (event) => {
     if (state.view !== 'mission' || !state.session) return;
+    if (!canAcceptMissionInput(state.introStatus)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
     event.preventDefault();
@@ -304,6 +314,7 @@
             <div class="typed-text">${renderTypedText(target, session.currentInput)}</div>
             <div class="keyboard">${renderKeyboard(levelData.focusKeys, target, session.currentInput)}</div>
           </div>
+          ${state.introStatus !== 'playing' ? renderIntroOverlay() : ''}
         </section>
       </div>
       ${state.result ? renderResultModal() : ''}
@@ -384,6 +395,7 @@
         if (action === 'home') showHome();
         if (action === 'show-editor') showEditor();
         if (action === 'start-free') startLevel('level-1');
+        if (action === 'begin-practice') beginPractice();
         if (action === 'retry-level') startLevel(state.currentLevel.id);
         if (action === 'finish-level') finishLevel();
       });
@@ -394,12 +406,16 @@
     state.view = 'home';
     state.currentLevel = null;
     state.session = null;
+    state.introStatus = 'idle';
+    state.introToken += 1;
     state.result = null;
     render();
   }
 
   function showMap() {
     state.view = 'map';
+    state.introStatus = 'idle';
+    state.introToken += 1;
     state.result = null;
     render();
   }
@@ -430,13 +446,34 @@
       targets: item.targets,
       targetAccuracy: item.targetAccuracy || 85,
     });
+    state.introText = getNpcText(item, 'ready');
+    state.introToken += 1;
+    const introToken = state.introToken;
+    state.introStatus = getInitialIntroStatus({
+      audioEnabled: state.audioEnabled,
+      canSpeak: 'speechSynthesis' in window,
+    });
     state.result = null;
     state.view = 'mission';
-    speak(getNpcText(item, 'ready'), item.npcLanguage || state.language);
+    if (state.introStatus === 'speaking') {
+      speakIntro(state.introText, item.npcLanguage || state.language, introToken);
+    }
+    render();
+  }
+
+  function beginPractice() {
+    if (state.view !== 'mission' || state.introStatus !== 'ready') return;
+    state.introStatus = 'playing';
+    state.session = {
+      ...state.session,
+      startedAt: Date.now(),
+      updatedAt: Date.now(),
+    };
     render();
   }
 
   function handleMissionKey(key) {
+    if (!canAcceptMissionInput(state.introStatus)) return;
     const previousFeedback = state.session.feedback;
     state.session = handleTypingKey(state.session, key);
     if (state.session.feedback === 'error') {
@@ -582,6 +619,23 @@
     return levelData.npcLine || tr(levelData.npcLineKey);
   }
 
+  function renderIntroOverlay() {
+    const isSpeaking = state.introStatus === 'speaking';
+    return `
+      <div class="intro-overlay">
+        <div class="intro-card">
+          <div class="npc-sprite small" aria-hidden="true">
+            <div class="npc-head"></div>
+            <div class="npc-body"></div>
+          </div>
+          <h3>${isSpeaking ? tr('introListening') : tr('introReady')}</h3>
+          <p>${escapeHtml(state.introText)}</p>
+          <button class="pixel-btn primary" data-action="begin-practice" ${isSpeaking ? 'disabled' : ''}>${tr('beginPractice')}</button>
+        </div>
+      </div>
+    `;
+  }
+
   function speak(text, language) {
     if (!state.audioEnabled || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -589,6 +643,47 @@
     utterance.lang = language || state.language;
     utterance.rate = 0.92;
     window.speechSynthesis.speak(utterance);
+  }
+
+  function speakIntro(text, language, introToken) {
+    if (!state.audioEnabled || !('speechSynthesis' in window)) {
+      completeIntro(introToken);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    let completed = false;
+    let fallbackTimer = null;
+
+    function done() {
+      if (completed) return;
+      completed = true;
+      window.clearTimeout(fallbackTimer);
+      completeIntro(introToken);
+    }
+
+    function checkFallback() {
+      if (completed) return;
+      if (shouldCompleteIntroFallback(window.speechSynthesis)) {
+        done();
+        return;
+      }
+      fallbackTimer = window.setTimeout(checkFallback, 400);
+    }
+
+    utterance.lang = language || state.language;
+    utterance.rate = 0.92;
+    utterance.onend = done;
+    utterance.onerror = done;
+    window.speechSynthesis.speak(utterance);
+    fallbackTimer = window.setTimeout(checkFallback, 1200);
+  }
+
+  function completeIntro(introToken) {
+    if (state.view !== 'mission' || introToken !== state.introToken) return;
+    state.introStatus = 'ready';
+    render();
   }
 
   function playFeedbackSound(kind) {
@@ -640,6 +735,18 @@
       },
     };
     return sounds[kind] || sounds.correct;
+  }
+
+  function canAcceptMissionInput(introStatus) {
+    return introStatus === 'playing';
+  }
+
+  function getInitialIntroStatus({ audioEnabled, canSpeak }) {
+    return audioEnabled && canSpeak ? 'speaking' : 'ready';
+  }
+
+  function shouldCompleteIntroFallback({ speaking, pending }) {
+    return !speaking && !pending;
   }
 
   function renderStars(count) {

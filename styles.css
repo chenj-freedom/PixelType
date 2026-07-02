@@ -185,6 +185,21 @@ button {
   image-rendering: pixelated;
 }
 
+.npc-sprite.small {
+  width: 110px;
+  height: 96px;
+}
+
+.npc-sprite.small .npc-head {
+  width: 72px;
+  height: 56px;
+}
+
+.npc-sprite.small .npc-body {
+  width: 88px;
+  height: 42px;
+}
+
 .npc-head {
   width: 96px;
   height: 74px;
@@ -403,6 +418,35 @@ button {
   border: 4px solid var(--ink);
   background: #fff;
   padding: 14px;
+}
+
+.intro-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(31, 41, 51, 0.48);
+}
+
+.intro-card {
+  width: min(520px, 100%);
+  border: 5px solid var(--ink);
+  background: #fffdf2;
+  box-shadow: var(--shadow);
+  padding: 22px;
+  text-align: center;
+}
+
+.intro-card h3 {
+  margin: 8px 0 10px;
+  font-size: 24px;
+}
+
+.intro-card p {
+  margin: 0 0 18px;
+  line-height: 1.7;
+  font-size: 18px;
 }
 
 .typed-text {
