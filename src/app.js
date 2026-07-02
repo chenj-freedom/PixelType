@@ -12,7 +12,7 @@
 
   const STRINGS = {
     'zh-CN': {
-      appTitle: '像素打字岛',
+      appTitle: 'PixelType',
       appSubtitle: '跟着小向导，学会英文键盘打字',
       homeIntro: '先从 F 和 J 开始，按学习顺序逐步解锁地图关卡。',
       guideLabel: '向导',
@@ -23,7 +23,7 @@
       editLevels: '编辑关卡',
       backHome: '返回首页',
       backMap: '返回地图',
-      mapTitle: '打字岛地图',
+      mapTitle: '闯关地图',
       customArea: '自定义关卡',
       locked: '未解锁',
       startLevel: '开始',
@@ -91,7 +91,7 @@
       'npc.level8': '最后试试短句。空格和句号也算目标哦。',
     },
     'en-US': {
-      appTitle: 'PixelType Island',
+      appTitle: 'PixelType',
       appSubtitle: 'Learn English keyboard typing with your guide',
       homeIntro: 'Start with F and J, then unlock map levels in learning order.',
       guideLabel: 'Guide',
@@ -102,7 +102,7 @@
       editLevels: 'Level Editor',
       backHome: 'Home',
       backMap: 'Map',
-      mapTitle: 'Typing Island Map',
+      mapTitle: 'Level Map',
       customArea: 'Custom Levels',
       locked: 'Locked',
       startLevel: 'Start',

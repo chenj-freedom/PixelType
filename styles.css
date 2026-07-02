@@ -72,6 +72,12 @@ button {
   gap: 12px;
 }
 
+.brand > div:not(.logo-pixel) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .logo-pixel {
   width: 44px;
   height: 44px;
@@ -89,7 +95,7 @@ button {
 }
 
 .brand-subtitle {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 15px;
 }
 
