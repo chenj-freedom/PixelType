@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PixelType Font Review</title>
+  <style>
+    :root {
+      --ink: #06162e;
+      --paper: #fff7d6;
+      --line: rgba(239, 71, 111, .42);
+      --guide: rgba(6, 22, 46, .18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(#43b9ee 0 42%, #75d651 42% 70%, #5a2f24 70% 100%);
+      color: var(--ink);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 28px auto;
+      padding: 28px;
+      border: 5px solid var(--ink);
+      background: var(--paper);
+      box-shadow: 0 8px 0 rgba(6, 22, 46, .24);
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+      border-bottom: 4px solid rgba(6, 22, 46, .18);
+      padding-bottom: 18px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    p {
+      color: rgba(6, 22, 46, .7);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .panel {
+      margin-top: 20px;
+      padding: 18px;
+      border: 4px solid var(--ink);
+      background: rgba(255, 255, 255, .42);
+      box-shadow: 5px 5px 0 rgba(6, 22, 46, .18);
+    }
+
+    .panel h2 {
+      margin-bottom: 14px;
+      font-size: 18px;
+    }
+
+    .review-row {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 18px 10px 30px;
+      overflow: hidden;
+      background:
+        linear-gradient(transparent 0 calc(100% - 33px), var(--line) calc(100% - 33px) calc(100% - 29px), transparent calc(100% - 29px)),
+        repeating-linear-gradient(90deg, transparent 0 23px, var(--guide) 23px 24px);
+    }
+
+    .review-row::after {
+      content: "baseline";
+      position: absolute;
+      right: 10px;
+      bottom: 12px;
+      color: rgba(239, 71, 111, .82);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .glyph-card {
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      min-width: 36px;
+    }
+
+    .glyph-slot {
+      --glyph-height: 48px;
+      position: relative;
+      display: inline-block;
+      width: calc(var(--glyph-advance) * var(--glyph-height) / 16);
+      height: var(--glyph-height);
+    }
+
+    .glyph-slot img {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 100%;
+      width: auto;
+      image-rendering: pixelated;
+      filter: drop-shadow(2px 2px 0 rgba(6, 22, 46, .18));
+    }
+
+    .glyph-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(6, 22, 46, .55);
+    }
+
+    .word-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 6px;
+      padding: 18px 10px;
+      background:
+        linear-gradient(transparent 0 calc(100% - 31px), var(--line) calc(100% - 31px) calc(100% - 27px), transparent calc(100% - 27px));
+    }
+
+    .word-line .glyph-slot {
+      --glyph-height: 58px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>PixelType 字母图集 Review</h1>
+        <p>这里直接使用 assets/sprites/font 下的 PNG 字母资源。红线是基线，下探字母会低于红线。</p>
+      </div>
+      <p>可直接本地打开：font-review.html</p>
+    </header>
+
+    <section class="panel">
+      <h2>大写 A-Z</h2>
+      <div class="review-row uppercase" data-text="ABCDEFGHIJKLMNOPQRSTUVWXYZ" data-mode="cards"></div>
+    </section>
+
+    <section class="panel">
+      <h2>小写 a-z</h2>
+      <div class="review-row lowercase" data-text="abcdefghijklmnopqrstuvwxyz" data-mode="cards"></div>
+    </section>
+
+    <section class="panel">
+      <h2>混排示例</h2>
+      <div class="word-line" data-text="PixelType"></div>
+      <div class="word-line" data-text="Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm"></div>
+      <div class="word-line" data-text="Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz"></div>
+    </section>
+  </main>
+
+  <script>
+    const UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const LOWERCASE = 'abcdefghijklmnopqrstuvwxyz';
+    const ADVANCE = { i: 5, j: 7, l: 5, f: 8, r: 8, t: 8, x: 10, L: 11, P: 10, T: 11 };
+
+    function glyphHtml(char) {
+      if (char === ' ') return '<span style="width:24px"></span>';
+      const isUpper = UPPERCASE.includes(char);
+      const isLower = LOWERCASE.includes(char);
+      if (!isUpper && !isLower) return '';
+      const folder = isUpper ? 'upper' : 'lower';
+      const advance = ADVANCE[char] || ADVANCE[char.toLowerCase()] || 10;
+      const src = isUpper
+        ? `assets/sprites/font/upper-${char}.png`
+        : `assets/sprites/font/lower-${char}.png`;
+      return `<span class="glyph-slot ${folder}" style="--glyph-advance:${advance}"><img src="${src}" alt="${char}"></span>`;
+    }
+
+    document.querySelectorAll('[data-text]').forEach((row) => {
+      const text = row.dataset.text;
+      const mode = row.dataset.mode;
+      row.innerHTML = text.split('').map((char) => {
+        if (char === ' ') return glyphHtml(char);
+        const glyph = glyphHtml(char);
+        if (mode !== 'cards') return glyph;
+        return `<span class="glyph-card">${glyph}<span class="glyph-label">${char}</span></span>`;
+      }).join('');
+    });
+  </script>
+</body>
+</html>

@@ -10,6 +10,20 @@
     level('level-8', 8, 'level.shortSentences', 'level.shortSentences.subtitle', ['A-Z', '.', ','], ['I can type.', 'A cat can run.', 'The dog is happy.', 'I like typing.'], 90, 'npc.level8'),
   ];
 
+  const PIXEL_SPRITE_FONT_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const PIXEL_GLYPH_ADVANCE = {
+    i: 5,
+    j: 7,
+    l: 5,
+    f: 8,
+    r: 8,
+    t: 8,
+    x: 10,
+    L: 11,
+    P: 10,
+    T: 11,
+  };
+
   const STRINGS = {
     'zh-CN': {
       appTitle: 'PixelType',
@@ -95,7 +109,7 @@
       appSubtitle: 'Learn English keyboard typing with your guide',
       homeIntro: 'Start with F and J, then unlock map levels in learning order.',
       guideLabel: 'Guide',
-      switchToChinese: 'Chinese',
+      switchToChinese: '中文',
       switchToEnglish: 'English',
       startAdventure: 'Start Adventure',
       freePractice: 'Free Practice',
@@ -130,7 +144,7 @@
       customLevelDefaultTitle: 'Custom Level',
       customLevelDefaultSubtitle: 'Custom Practice',
       customLevelDefaultNpcLine: 'Look at the target and type one letter at a time.',
-      languageChinese: 'Chinese',
+      languageChinese: '中文',
       languageEnglish: 'English',
       saveLevel: 'Save Level',
       preview: 'Preview',
@@ -222,6 +236,7 @@
   }
 
   function render() {
+    document.body.classList.toggle('home-art-active', state.view === 'home');
     if (state.view === 'map') renderMap();
     else if (state.view === 'mission') renderMission();
     else if (state.view === 'editor') renderEditor();
@@ -235,13 +250,12 @@
           <div class="brand">
             <div class="logo-pixel" aria-hidden="true"></div>
             <div>
-              <h1 class="brand-title">${tr('appTitle')}</h1>
+              <h1 class="brand-title">${renderPixelWord(tr('appTitle'), 'small')}</h1>
               <p class="brand-subtitle">${tr('appSubtitle')}</p>
             </div>
           </div>
-          <div class="toolbar">
-            <button class="pixel-btn" data-action="toggle-language">${state.language === 'zh-CN' ? tr('switchToEnglish') : tr('switchToChinese')}</button>
-            <button class="pixel-btn" data-action="toggle-audio">${state.audioEnabled ? tr('audioOn') : tr('audioOff')}</button>
+          <div class="toolbar icon-toolbar">
+            ${renderControlButtons()}
           </div>
         </header>
         ${content}
@@ -251,26 +265,80 @@
   }
 
   function renderHome() {
-    renderShell(`
-      <div class="hero">
-        <div class="hero-copy">
-          <h2>${tr('appTitle')}</h2>
-          <p>${tr('appSubtitle')}. ${tr('homeIntro')}</p>
-          <div class="hero-actions">
-            <button class="pixel-btn primary" data-action="show-map">${tr('startAdventure')}</button>
-            <button class="pixel-btn secondary" data-action="start-free">${tr('freePractice')}</button>
-            <button class="pixel-btn" data-action="show-editor">${tr('editLevels')}</button>
+    app.innerHTML = `
+      <section class="screen home-screen sprite-home-screen">
+        <div class="pixel-home-stage" role="img" aria-label="${tr('appTitle')}">
+          <img class="home-sprite bg-sprite bg-cloud-left-top" src="assets/sprites/bg-cloud-a.png" alt="">
+          <img class="home-sprite bg-sprite bg-cloud-left-mid" src="assets/sprites/bg-cloud-b.png" alt="">
+          <img class="home-sprite bg-sprite bg-cloud-right-top" src="assets/sprites/bg-cloud-b.png" alt="">
+          <img class="home-sprite bg-sprite bg-cloud-right-mid" src="assets/sprites/bg-cloud-a.png" alt="">
+          <img class="home-sprite bg-sprite bg-tree-left" src="assets/sprites/bg-tree-left.png" alt="">
+          <img class="home-sprite bg-sprite bg-tree-right" src="assets/sprites/bg-tree-right.png" alt="">
+          <img class="home-sprite bg-sprite bg-bush-left" src="assets/sprites/bg-bush.png" alt="">
+          <img class="home-sprite bg-sprite bg-bush-right" src="assets/sprites/bg-bush.png" alt="">
+          <img class="home-sprite bg-sprite bg-grass-left" src="assets/sprites/bg-grass.png" alt="">
+          <img class="home-sprite bg-sprite bg-grass-right" src="assets/sprites/bg-grass.png" alt="">
+
+          <div class="home-panel-shell">
+            <span class="panel-corner top-left" aria-hidden="true"></span>
+            <span class="panel-corner top-right" aria-hidden="true"></span>
+            <span class="panel-corner bottom-left" aria-hidden="true"></span>
+            <span class="panel-corner bottom-right" aria-hidden="true"></span>
+
+            <header class="sprite-home-header">
+              <div class="sprite-home-brand">
+                <img class="home-sprite home-brand-icon" src="assets/sprites/home-brand-icon.png" alt="">
+                <div class="home-title-stack">
+                  <h1>${renderPixelWord(tr('appTitle'), 'home')}</h1>
+                  <p class="home-subtitle-line"></p>
+                  <p class="home-subtitle-dashes"></p>
+                  <p class="sr-only">${tr('appSubtitle')}. ${tr('homeIntro')}. ${tr('npc.home')}</p>
+                </div>
+              </div>
+              <div class="sprite-home-controls">
+                ${renderControlButtons()}
+              </div>
+            </header>
+
+            <nav class="sprite-home-menu" aria-label="${tr('appTitle')}">
+              <button class="sprite-card adventure-card" data-action="show-map" aria-label="${tr('startAdventure')}">
+                <img class="home-sprite button-sprite" src="assets/sprites/button-adventure.png" alt="">
+                <span class="sr-only">${tr('startAdventure')}</span>
+              </button>
+              <button class="sprite-card practice-card" data-action="start-free" aria-label="${tr('freePractice')}">
+                <img class="home-sprite button-sprite" src="assets/sprites/button-practice.png" alt="">
+                <span class="sr-only">${tr('freePractice')}</span>
+              </button>
+              <button class="sprite-card editor-card" data-action="show-editor" aria-label="${tr('editLevels')}">
+                <img class="home-sprite button-sprite" src="assets/sprites/button-editor.png" alt="">
+                <span class="sr-only">${tr('editLevels')}</span>
+              </button>
+            </nav>
+
+            <section class="sprite-map" aria-hidden="true">
+              <img class="home-sprite sprite-map-art" src="assets/sprites/home-map.png" alt="">
+            </section>
+
+            <aside class="sprite-guide" aria-hidden="true">
+              <img class="home-sprite sprite-speech" src="assets/sprites/speech-bubble.png" alt="">
+              <img class="home-sprite sprite-robot" src="assets/sprites/robot-guide.png" alt="">
+            </aside>
           </div>
         </div>
-        <aside class="npc-panel">
-          <div class="npc-sprite" aria-hidden="true">
-            <div class="npc-head"></div>
-            <div class="npc-body"></div>
-          </div>
-          <div class="speech">${tr('npc.home')}</div>
-        </aside>
-      </div>
-    `);
+      </section>
+    `;
+    bindGlobalActions();
+  }
+
+  function renderControlButtons() {
+    return `
+      <button class="sprite-icon-btn" data-action="toggle-audio" aria-label="${state.audioEnabled ? tr('audioOn') : tr('audioOff')}">
+        <img class="home-sprite" src="${getHomeSoundIcon()}" alt="">
+      </button>
+      <button class="sprite-icon-btn" data-action="toggle-language" aria-label="${state.language === 'zh-CN' ? tr('switchToEnglish') : tr('switchToChinese')}">
+        <img class="home-sprite" src="${getHomeLanguageIcon()}" alt="">
+      </button>
+    `;
   }
 
   function renderMap() {
@@ -282,9 +350,11 @@
           <button class="pixel-btn secondary" data-action="show-editor">${tr('editLevels')}</button>
         </div>
         <h2>${tr('mapTitle')}</h2>
-        <div class="map-grid">
-          ${levels.map((item) => renderLevelNode(item)).join('')}
-        </div>
+        <section class="map-board" aria-label="${tr('mapTitle')}">
+          <div class="map-grid adventure-path">
+            ${levels.map((item) => renderLevelNode(item)).join('')}
+          </div>
+        </section>
         ${state.customLevels.length === 0 ? `<div class="empty-note">${tr('noCustomLevels')}</div>` : ''}
       </div>
     `);
@@ -451,13 +521,31 @@
   function toggleLanguage() {
     state.language = state.language === 'zh-CN' ? 'en-US' : 'zh-CN';
     localStorage.setItem(STORAGE_KEYS.language, state.language);
+    refreshIntroTextForLanguage();
     render();
   }
 
   function toggleAudio() {
     state.audioEnabled = !state.audioEnabled;
     localStorage.setItem(STORAGE_KEYS.audio, String(state.audioEnabled));
+    const canceledSpeech = cancelActiveSpeechOnAudioOff(state.audioEnabled, window.speechSynthesis);
+    if (canceledSpeech && state.view === 'mission' && state.introStatus === 'speaking') {
+      completeIntro(state.introToken);
+      return;
+    }
     render();
+  }
+
+  function getHomeSoundIcon() {
+    return state.audioEnabled
+      ? 'assets/sprites/icon-sound-on.png'
+      : 'assets/sprites/icon-sound-off.png';
+  }
+
+  function getHomeLanguageIcon() {
+    return state.language === 'zh-CN'
+      ? 'assets/sprites/icon-language-en.png'
+      : 'assets/sprites/icon-language-zh.png';
   }
 
   function startLevel(levelId) {
@@ -496,6 +584,7 @@
 
   function handleMissionKey(key) {
     if (!canAcceptMissionInput(state.introStatus)) return;
+    if (state.result || state.session.isComplete) return;
     const previousFeedback = state.session.feedback;
     state.session = handleTypingKey(state.session, key);
     if (state.session.feedback === 'error') {
@@ -506,7 +595,7 @@
     if (state.session.feedback === 'error' && previousFeedback !== 'error') {
       speak(tr('errorHint'), state.language);
     }
-    if (state.session.isComplete) {
+    if (state.session.isComplete && !state.result) {
       state.result = getSessionStats(state.session);
       speak(tr('completeHint'), state.language);
     }
@@ -640,7 +729,13 @@
   function getNpcText(levelData, feedback) {
     if (feedback === 'error') return tr('errorHint');
     if (feedback === 'correct' || feedback === 'target-complete') return tr('correctHint');
+    if (levelData.npcLineKey) return tr(levelData.npcLineKey);
     return levelData.npcLine || tr(levelData.npcLineKey);
+  }
+
+  function refreshIntroTextForLanguage() {
+    if (state.view !== 'mission' || !state.currentLevel || state.introStatus === 'idle') return;
+    state.introText = getNpcText(state.currentLevel, 'ready');
   }
 
   function renderIntroOverlay() {
@@ -649,7 +744,11 @@
       <div class="intro-overlay">
         <div class="intro-card">
           <div class="npc-sprite small" aria-hidden="true">
-            <div class="npc-head"></div>
+            <div class="npc-head">
+              <span class="npc-cheek left"></span>
+              <span class="npc-cheek right"></span>
+              <span class="npc-mouth"></span>
+            </div>
             <div class="npc-body"></div>
           </div>
           <h3>${isSpeaking ? tr('introListening') : tr('introReady')}</h3>
@@ -679,6 +778,8 @@
     const utterance = new SpeechSynthesisUtterance(text);
     let completed = false;
     let fallbackTimer = null;
+    const introStartedAt = Date.now();
+    const fallbackMinimumMs = getIntroFallbackMinimumMs(text);
 
     function done() {
       if (completed) return;
@@ -689,7 +790,12 @@
 
     function checkFallback() {
       if (completed) return;
-      if (shouldCompleteIntroFallback(window.speechSynthesis)) {
+      if (shouldCompleteIntroFallback({
+        speaking: window.speechSynthesis.speaking,
+        pending: window.speechSynthesis.pending,
+        elapsedMs: Date.now() - introStartedAt,
+        minimumMs: fallbackMinimumMs,
+      })) {
         done();
         return;
       }
@@ -769,12 +875,48 @@
     return audioEnabled && canSpeak ? 'speaking' : 'ready';
   }
 
-  function shouldCompleteIntroFallback({ speaking, pending }) {
-    return !speaking && !pending;
+  function cancelActiveSpeechOnAudioOff(audioEnabled, speechSynthesis) {
+    if (audioEnabled || !speechSynthesis || typeof speechSynthesis.cancel !== 'function') return false;
+    speechSynthesis.cancel();
+    return true;
+  }
+
+  function shouldCompleteIntroFallback({ speaking, pending, elapsedMs = 0, minimumMs = 0 }) {
+    return elapsedMs >= minimumMs && !speaking && !pending;
+  }
+
+  function getIntroFallbackMinimumMs(text) {
+    const compactText = String(text || '').replace(/\s+/g, '');
+    const estimatedMs = compactText.length * 90;
+    return Math.min(Math.max(estimatedMs, 2200), 12000);
   }
 
   function renderStars(count) {
     return '★★★'.split('').map((star, index) => index < count ? star : '☆').join('');
+  }
+
+  function renderPixelWord(text, sizeClass) {
+    const letters = String(text).split('').map((char) => {
+      return renderSpriteGlyph(char, sizeClass);
+    }).join('');
+
+    return `
+      <span class="pixel-logo-wrap">
+        <span class="pixel-word ${sizeClass}" aria-hidden="true">${letters}</span>
+        <span class="sr-only">${escapeHtml(text)}</span>
+      </span>
+    `;
+  }
+
+  function renderSpriteGlyph(char, sizeClass) {
+    if (!PIXEL_SPRITE_FONT_CHARS.includes(char)) return '';
+    const isUpper = /[A-Z]/.test(char);
+    const src = isUpper
+      ? `assets/sprites/font/upper-${char}.png`
+      : `assets/sprites/font/lower-${char}.png`;
+    const caseClass = isUpper ? 'upper' : 'lower';
+    const advance = PIXEL_GLYPH_ADVANCE[char] || PIXEL_GLYPH_ADVANCE[char.toLowerCase()] || 10;
+    return `<span class="pixel-glyph-slot ${caseClass} ${sizeClass}" style="--glyph-advance:${advance}"><img class="pixel-glyph ${caseClass} ${sizeClass}" src="${src}" alt=""></span>`;
   }
 
   function renderTypedText(target, input) {
@@ -813,9 +955,9 @@
     const combined = localStorage.getItem(STORAGE_KEYS.audio);
     if (combined !== null) return combined !== 'false';
 
-    const legacySpeech = localStorage.getItem('pixeltype.speech.v1');
-    const legacySound = localStorage.getItem('pixeltype.sound.v1');
-    return legacySpeech !== 'false' && legacySound !== 'false';
+    const storedSpeechPreference = localStorage.getItem('pixeltype.speech.v1');
+    const storedSoundPreference = localStorage.getItem('pixeltype.sound.v1');
+    return storedSpeechPreference !== 'false' && storedSoundPreference !== 'false';
   }
 
   function escapeHtml(value) {

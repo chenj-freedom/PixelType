@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "generate:sprites": "node scripts/generate-font-sprites.mjs && node scripts/generate-home-sprites.mjs",
+    "optimize:assets": "node scripts/optimize-png-assets.mjs",
     "test": "node --test tests/*.test.mjs"
   }
 }

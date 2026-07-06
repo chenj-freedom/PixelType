@@ -132,3 +132,12 @@ const gain = audioContext.createGain();
 - 增加更细的手指提示和键盘区域高亮
 - 增加音效和可关闭的背景音乐
 - 增加英文 NPC 台词的完整润色
+
+## Sprite 资源说明
+
+首页由小型 sprite 资源组合渲染，包括按钮、图标、机器人、气泡、地图和像素字母资源。
+
+- `assets/sprites/` 存放按钮、图标、机器人、气泡和首页地图预览等 PNG 小资源。
+- `PixelType` 标题由程序按文字拼接 `assets/sprites/font/` 里的大小写字母 sprite。
+- 字母 sprite 包含英文大写和小写字母，后续需要改标题或做英文像素文字时可以复用同一套图片资源。
+- 字体和首页 UI sprite 可通过 `npm run generate:sprites` 重新生成。
