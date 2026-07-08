@@ -334,18 +334,39 @@ body.home-art-active .app-shell {
   min-height: 0;
 }
 
-.sprite-icon-btn:hover,
-.sprite-icon-btn:focus-visible,
 .sprite-card:hover,
 .sprite-card:focus-visible {
-  outline: 4px solid rgba(255,209,102,.95);
-  outline-offset: 3px;
+  outline: 0;
   transform: translateY(-2px);
 }
 
 .sprite-icon-btn {
   width: clamp(54px, 4.6vw, 94px);
-  height: auto;
+  height: clamp(54px, 4.6vw, 94px);
+  display: grid;
+  place-items: stretch;
+}
+
+.sprite-icon-btn:hover,
+.sprite-icon-btn:focus-visible {
+  outline: 0;
+  transform: translateY(-2px);
+}
+
+.sprite-icon-btn .home-sprite {
+  pointer-events: none;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.sprite-icon-btn:hover .home-sprite,
+.sprite-icon-btn:focus-visible .home-sprite {
+  filter: brightness(1.06) saturate(1.04) drop-shadow(0 3px 0 rgba(31,41,51,.22));
+  transform: translateY(-1px);
+}
+
+.sprite-icon-btn:active .home-sprite {
+  filter: brightness(.96) saturate(.98);
+  transform: translateY(2px);
 }
 
 .home-sprite {
@@ -395,12 +416,29 @@ body.home-art-active .app-shell {
 
 .sprite-card {
   width: clamp(150px, 10.75vw, 218px);
-  height: auto;
+  height: clamp(109px, 7.7vw, 158px);
+  aspect-ratio: 218 / 158;
+  display: grid;
+  place-items: stretch;
 }
 
 .button-sprite {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.sprite-card:hover .button-sprite,
+.sprite-card:focus-visible .button-sprite {
+  filter: brightness(1.06) saturate(1.04) drop-shadow(0 4px 0 rgba(31,41,51,.22));
+  transform: translateY(-2px);
+}
+
+.sprite-card:active .button-sprite {
+  filter: brightness(.96) saturate(.98);
+  transform: translateY(2px);
 }
 
 .sprite-map {
@@ -408,6 +446,7 @@ body.home-art-active .app-shell {
   left: 4.8%;
   right: 28.8%;
   bottom: 7.1%;
+  pointer-events: none;
 }
 
 .sprite-map-art {
@@ -419,6 +458,7 @@ body.home-art-active .app-shell {
   right: 5.4%;
   bottom: 5.5%;
   width: clamp(260px, 18.2vw, 370px);
+  pointer-events: none;
 }
 
 .sprite-speech {
@@ -489,6 +529,7 @@ body.home-art-active .app-shell {
 
 .toolbar.icon-toolbar .sprite-icon-btn {
   width: clamp(52px, 4vw, 68px);
+  height: clamp(52px, 4vw, 68px);
 }
 
 .pixel-btn {

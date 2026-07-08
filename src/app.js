@@ -49,6 +49,7 @@
     typedInput: '已输入',
     noneInput: '还没有',
     nextKey: '下一键',
+    spaceKey: '空格',
     accuracy: '准确率',
       lives: '生命',
       progress: '进度',
@@ -131,6 +132,7 @@
     typedInput: 'Typed',
     noneInput: 'None',
     nextKey: 'Next Key',
+    spaceKey: 'Space',
     accuracy: 'Accuracy',
       lives: 'Lives',
       progress: 'Progress',
@@ -938,7 +940,13 @@
       target: targetText,
       typedInput,
       nextKey,
+      nextKeyLabel: getNextKeyLabel(nextKey),
     };
+  }
+
+  function getNextKeyLabel(key) {
+    if (key === ' ') return tr('spaceKey');
+    return key;
   }
 
   function renderTypingStatus(display) {
@@ -954,7 +962,7 @@
         </div>
         <div class="typing-row">
           <span>${tr('nextKey')}</span>
-          <strong>${escapeHtml(display.nextKey)}</strong>
+          <strong>${escapeHtml(display.nextKeyLabel)}</strong>
         </div>
       </div>
     `;
