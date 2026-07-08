@@ -36,6 +36,17 @@ test('switching language refreshes the cached mission intro text', () => {
   assert.match(appSource, /if \(levelData\.npcLineKey\) return tr\(levelData\.npcLineKey\);/);
 });
 
+test('home sprite tooltips describe audio and language button states', () => {
+  assert.equal(t('zh-CN', 'audioOnTooltip'), '音量开');
+  assert.equal(t('zh-CN', 'audioOffTooltip'), '音量关');
+  assert.equal(t('zh-CN', 'switchToChineseTooltip'), '切换到中文');
+  assert.equal(t('zh-CN', 'switchToEnglishTooltip'), '切换到英文');
+  assert.equal(t('en-US', 'audioOnTooltip'), 'Sound On');
+  assert.equal(t('en-US', 'audioOffTooltip'), 'Sound Off');
+  assert.equal(t('en-US', 'switchToChineseTooltip'), 'Switch to 中文');
+  assert.equal(t('en-US', 'switchToEnglishTooltip'), 'Switch to English');
+});
+
 test('completed mission results are frozen after the first settlement', () => {
   assert.match(appSource, /function handleMissionKey\(key\)[\s\S]*if \(state\.result \|\| state\.session\.isComplete\) return;/);
   assert.match(appSource, /if \(state\.session\.isComplete && !state\.result\)[\s\S]*state\.result = getSessionStats\(state\.session\);/);

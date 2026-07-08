@@ -326,6 +326,7 @@ body.home-art-active .app-shell {
 
 .sprite-icon-btn,
 .sprite-card {
+  position: relative;
   border: 0;
   padding: 0;
   background: transparent;
@@ -367,6 +368,66 @@ body.home-art-active .app-shell {
 .sprite-icon-btn:active .home-sprite {
   filter: brightness(.96) saturate(.98);
   transform: translateY(2px);
+}
+
+.sprite-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 30;
+  min-width: max-content;
+  max-width: 220px;
+  border: 3px solid #0b1b2d;
+  background: #fffdf2;
+  color: #0b1b2d;
+  padding: 6px 10px;
+  font-size: clamp(13px, .95vw, 16px);
+  font-weight: 900;
+  line-height: 1.2;
+  box-shadow: 0 4px 0 rgba(31,41,51,.24);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 100ms ease, transform 100ms ease, visibility 100ms ease;
+  white-space: nowrap;
+}
+
+.sprite-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 10px;
+  height: 10px;
+  border-right: 3px solid #0b1b2d;
+  border-bottom: 3px solid #0b1b2d;
+  background: #fffdf2;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.sprite-home-controls .sprite-tooltip,
+.toolbar.icon-toolbar .sprite-tooltip {
+  top: calc(100% + 10px);
+  bottom: auto;
+}
+
+.sprite-home-controls .sprite-tooltip::after,
+.toolbar.icon-toolbar .sprite-tooltip::after {
+  top: -9px;
+  bottom: auto;
+  border: 0;
+  border-left: 3px solid #0b1b2d;
+  border-top: 3px solid #0b1b2d;
+}
+
+.sprite-card:hover .sprite-tooltip,
+.sprite-card:focus-visible .sprite-tooltip,
+.sprite-icon-btn:hover .sprite-tooltip,
+.sprite-icon-btn:focus-visible .sprite-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
 }
 
 .home-sprite {

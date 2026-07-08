@@ -76,6 +76,10 @@
       noCustomLevels: '还没有自定义关卡。',
       audioOn: '声音开',
       audioOff: '声音关',
+      audioOnTooltip: '音量开',
+      audioOffTooltip: '音量关',
+      switchToChineseTooltip: '切换到中文',
+      switchToEnglishTooltip: '切换到英文',
       difficultySlow: '慢速',
       difficultyNormal: '普通',
       difficultyChallenge: '挑战',
@@ -159,6 +163,10 @@
       noCustomLevels: 'No custom levels yet.',
       audioOn: 'Sound On',
       audioOff: 'Sound Off',
+      audioOnTooltip: 'Sound On',
+      audioOffTooltip: 'Sound Off',
+      switchToChineseTooltip: 'Switch to 中文',
+      switchToEnglishTooltip: 'Switch to English',
       difficultySlow: 'Slow',
       difficultyNormal: 'Normal',
       difficultyChallenge: 'Challenge',
@@ -317,14 +325,17 @@
               <button class="sprite-card adventure-card" data-action="show-map" aria-label="${tr('startAdventure')}">
                 <img class="home-sprite button-sprite" src="assets/sprites/button-adventure.png" alt="">
                 <span class="sr-only">${tr('startAdventure')}</span>
+                <span class="sprite-tooltip">${tr('startAdventure')}</span>
               </button>
               <button class="sprite-card practice-card" data-action="start-free" aria-label="${tr('freePractice')}">
                 <img class="home-sprite button-sprite" src="assets/sprites/button-practice.png" alt="">
                 <span class="sr-only">${tr('freePractice')}</span>
+                <span class="sprite-tooltip">${tr('freePractice')}</span>
               </button>
               <button class="sprite-card editor-card" data-action="show-editor" aria-label="${tr('editLevels')}">
                 <img class="home-sprite button-sprite" src="assets/sprites/button-editor.png" alt="">
                 <span class="sr-only">${tr('editLevels')}</span>
+                <span class="sprite-tooltip">${tr('editLevels')}</span>
               </button>
             </nav>
 
@@ -344,12 +355,16 @@
   }
 
   function renderControlButtons() {
+    const audioTooltip = state.audioEnabled ? tr('audioOffTooltip') : tr('audioOnTooltip');
+    const languageTooltip = state.language === 'zh-CN' ? tr('switchToEnglishTooltip') : tr('switchToChineseTooltip');
     return `
-      <button class="sprite-icon-btn" data-action="toggle-audio" aria-label="${state.audioEnabled ? tr('audioOn') : tr('audioOff')}">
+      <button class="sprite-icon-btn" data-action="toggle-audio" aria-label="${audioTooltip}">
         <img class="home-sprite" src="${getHomeSoundIcon()}" alt="">
+        <span class="sprite-tooltip">${audioTooltip}</span>
       </button>
-      <button class="sprite-icon-btn" data-action="toggle-language" aria-label="${state.language === 'zh-CN' ? tr('switchToEnglish') : tr('switchToChinese')}">
+      <button class="sprite-icon-btn" data-action="toggle-language" aria-label="${languageTooltip}">
         <img class="home-sprite" src="${getHomeLanguageIcon()}" alt="">
+        <span class="sprite-tooltip">${languageTooltip}</span>
       </button>
     `;
   }
@@ -559,8 +574,8 @@
 
   function getHomeLanguageIcon() {
     return state.language === 'zh-CN'
-      ? 'assets/sprites/icon-language-en.png'
-      : 'assets/sprites/icon-language-zh.png';
+      ? 'assets/sprites/icon-language-zh.png'
+      : 'assets/sprites/icon-language-en.png';
   }
 
   function startLevel(levelId) {

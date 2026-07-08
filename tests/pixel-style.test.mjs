@@ -163,7 +163,7 @@ test('cropped guide sprites do not include stray black pixels on their outer edg
   assert.equal(darkOpaquePixelsInRow(speech, speech.height - 1), 0, 'speech bubble bottom row should not include the robot antenna');
 });
 
-test('home control sprites show distinct audio states and target language badges', () => {
+test('home control sprites show distinct audio states and current language badges', () => {
   const soundOn = decodePng('../assets/sprites/icon-sound-on.png');
   const soundOff = decodePng('../assets/sprites/icon-sound-off.png');
   const languageEn = decodePng('../assets/sprites/icon-language-en.png');
@@ -171,8 +171,8 @@ test('home control sprites show distinct audio states and target language badges
 
   assert.ok(pixelDifference(soundOn, soundOff) > 400, 'sound on/off icons should visibly differ');
   assert.ok(pixelDifference(languageEn, languageZh) > 180, 'language EN/中文 icons should visibly differ');
-  assert.ok(opaquePixelsInRegion(languageEn, 48, 44, 32, 24) > 120, 'EN target badge should appear on the globe icon');
-  assert.ok(opaquePixelsInRegion(languageZh, 48, 44, 32, 24) > 120, 'Chinese target badge should appear on the globe icon');
+  assert.ok(opaquePixelsInRegion(languageEn, 48, 44, 32, 24) > 120, 'EN current-language badge should appear on the globe icon');
+  assert.ok(opaquePixelsInRegion(languageZh, 48, 44, 32, 24) > 120, 'Chinese current-language badge should appear on the globe icon');
 });
 
 test('home and level pages share the same stateful audio and language controls', () => {
@@ -183,6 +183,19 @@ test('home and level pages share the same stateful audio and language controls',
   assert.match(appSource, /class="toolbar icon-toolbar"/);
   assert.match(appSource, /src="\$\{getHomeSoundIcon\(\)\}"/);
   assert.match(appSource, /src="\$\{getHomeLanguageIcon\(\)\}"/);
+});
+
+test('home sprite buttons show pixel tooltips with state-aware control text', () => {
+  assert.equal((appSource.match(/class="sprite-tooltip"/g) || []).length, 5);
+  assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('startAdventure'\)\}<\/span>/);
+  assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('freePractice'\)\}<\/span>/);
+  assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('editLevels'\)\}<\/span>/);
+  assert.match(appSource, /const audioTooltip = state\.audioEnabled \? tr\('audioOffTooltip'\) : tr\('audioOnTooltip'\);/);
+  assert.match(appSource, /const languageTooltip = state\.language === 'zh-CN' \? tr\('switchToEnglishTooltip'\) : tr\('switchToChineseTooltip'\);/);
+  assert.match(appSource, /function getHomeLanguageIcon\(\) \{\s*return state\.language === 'zh-CN'\s*\?\s*'assets\/sprites\/icon-language-zh\.png'\s*:\s*'assets\/sprites\/icon-language-en\.png';\s*\}/);
+  assert.match(styleSource, /\.sprite-tooltip\s*{[\s\S]*position:\s*absolute;[\s\S]*opacity:\s*0;[\s\S]*pointer-events:\s*none/);
+  assert.match(styleSource, /\.toolbar\.icon-toolbar \.sprite-tooltip\s*{[\s\S]*top:\s*calc\(100% \+ 10px\);[\s\S]*bottom:\s*auto/);
+  assert.match(styleSource, /\.sprite-card:hover \.sprite-tooltip,[\s\S]*\.sprite-icon-btn:focus-visible \.sprite-tooltip\s*{[\s\S]*opacity:\s*1/);
 });
 
 test('turning audio off cancels any active browser speech immediately', () => {
