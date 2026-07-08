@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { getTypingDisplay } from '../src/typing-display.js';
+
+test('builds a clear typing status without placeholder characters', () => {
+  const display = getTypingDisplay('jfjf', 'jfj');
+
+  assert.deepEqual(display, {
+    target: 'jfjf',
+    typedInput: 'jfj',
+    nextKey: 'f',
+  });
+});
+
+test('keeps typed input empty before the child starts typing', () => {
+  const display = getTypingDisplay('fj', '');
+
+  assert.deepEqual(display, {
+    target: 'fj',
+    typedInput: '',
+    nextKey: 'f',
+  });
+});

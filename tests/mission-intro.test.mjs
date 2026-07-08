@@ -1,12 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   canAcceptMissionInput,
   cancelActiveSpeechOnAudioOff,
   getIntroFallbackMinimumMs,
   getInitialIntroStatus,
+  shouldBeginPracticeFromKey,
   shouldCompleteIntroFallback,
 } from '../src/mission-intro.js';
+
+const appSource = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 
 test('blocks typing input while the level introduction is active', () => {
   assert.equal(canAcceptMissionInput('speaking'), false);
@@ -18,6 +22,20 @@ test('starts in ready state when audio cannot be spoken', () => {
   assert.equal(getInitialIntroStatus({ audioEnabled: true, canSpeak: true }), 'speaking');
   assert.equal(getInitialIntroStatus({ audioEnabled: false, canSpeak: true }), 'ready');
   assert.equal(getInitialIntroStatus({ audioEnabled: true, canSpeak: false }), 'ready');
+});
+
+test('starts practice from keyboard only after the introduction is ready', () => {
+  assert.equal(shouldBeginPracticeFromKey('Enter', 'ready'), true);
+  assert.equal(shouldBeginPracticeFromKey(' ', 'ready'), true);
+  assert.equal(shouldBeginPracticeFromKey('Space', 'ready'), true);
+  assert.equal(shouldBeginPracticeFromKey('Spacebar', 'ready'), true);
+  assert.equal(shouldBeginPracticeFromKey('Enter', 'speaking'), false);
+  assert.equal(shouldBeginPracticeFromKey('f', 'ready'), false);
+  assert.equal(shouldBeginPracticeFromKey('Enter', 'playing'), false);
+});
+
+test('mission keydown starts ready intro with Enter or Space before typing input is accepted', () => {
+  assert.match(appSource, /document\.addEventListener\('keydown', \(event\) => {[\s\S]*shouldBeginPracticeFromKey\(event\.key, state\.introStatus\)[\s\S]*beginPractice\(\);[\s\S]*if \(!canAcceptMissionInput\(state\.introStatus\)\) return;/);
 });
 
 test('does not complete fallback while browser speech is still active', () => {

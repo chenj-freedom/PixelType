@@ -604,112 +604,6 @@ body.home-art-active .app-shell {
   flex-wrap: wrap;
 }
 
-.npc-panel {
-  align-self: center;
-  display: grid;
-  gap: 14px;
-}
-
-.npc-sprite {
-  width: 150px;
-  height: 130px;
-  margin: 0 auto;
-  position: relative;
-  image-rendering: pixelated;
-}
-
-.npc-sprite.small {
-  width: 110px;
-  height: 96px;
-}
-
-.npc-sprite.small .npc-head {
-  width: 72px;
-  height: 56px;
-}
-
-.npc-sprite.small .npc-body {
-  width: 88px;
-  height: 42px;
-}
-
-.npc-head {
-  width: 96px;
-  height: 74px;
-  margin: 0 auto;
-  border: 4px solid var(--ink);
-  background: var(--sun);
-  box-shadow: inset -12px -12px 0 #f4a261;
-  position: relative;
-}
-
-.npc-head::before,
-.npc-head::after,
-.npc-cheek,
-.npc-mouth {
-  image-rendering: pixelated;
-}
-
-.npc-head::before,
-.npc-head::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  background: var(--ink);
-  position: absolute;
-  top: 28px;
-}
-
-.npc-head::before {
-  left: 24px;
-}
-
-.npc-head::after {
-  right: 24px;
-}
-
-.npc-cheek,
-.npc-mouth {
-  position: absolute;
-  display: block;
-}
-
-.npc-cheek {
-  width: 12px;
-  height: 8px;
-  top: 44px;
-  background: #ff9db0;
-}
-
-.npc-cheek.left {
-  left: 14px;
-}
-
-.npc-cheek.right {
-  right: 14px;
-}
-
-.npc-mouth {
-  left: 50%;
-  bottom: 14px;
-  width: 24px;
-  height: 8px;
-  transform: translateX(-50%);
-  background: var(--ink);
-  box-shadow:
-    0 8px 0 #fff,
-    8px 8px 0 #fff;
-}
-
-.npc-body {
-  width: 120px;
-  height: 54px;
-  margin: -2px auto 0;
-  border: 4px solid var(--ink);
-  background: var(--pink);
-  box-shadow: inset -12px 0 0 #ef476f;
-}
-
 .speech {
   border: 4px solid var(--ink);
   background: #fff;
@@ -891,7 +785,7 @@ body.home-art-active .app-shell {
 }
 
 .mission-stage {
-  min-height: 380px;
+  min-height: 520px;
   border: 4px solid var(--ink);
   background:
     linear-gradient(180deg, #1f8bd1 0%, #35a7ff 60%, #4caf50 60%, #4caf50 100%);
@@ -902,7 +796,7 @@ body.home-art-active .app-shell {
 .target-card {
   position: absolute;
   left: 50%;
-  top: 34%;
+  top: 24%;
   transform: translate(-50%, -50%);
   min-width: 180px;
   text-align: center;
@@ -923,24 +817,32 @@ body.home-art-active .app-shell {
 .mission-npc {
   position: absolute;
   left: 24px;
-  bottom: 112px;
-  width: 88px;
-  height: 66px;
-  border: 4px solid var(--ink);
-  background: var(--sun);
-  display: grid;
-  place-items: center;
+  bottom: 188px;
+  width: 96px;
+  border: 0;
+  background: transparent;
+  display: block;
   font-weight: 900;
+}
+
+.mission-guide-icon {
+  display: block;
+  width: 96px;
+  height: auto;
+  image-rendering: pixelated;
 }
 
 .mission-speech {
   position: absolute;
-  left: 122px;
-  bottom: 112px;
-  max-width: 360px;
+  left: 146px;
+  bottom: 188px;
+  width: min(420px, calc(100% - 190px));
+  height: 78px;
   border: 3px solid var(--ink);
   background: #fff;
   padding: 10px 12px;
+  display: flex;
+  align-items: center;
   line-height: 1.5;
 }
 
@@ -951,7 +853,7 @@ body.home-art-active .app-shell {
   bottom: 20px;
   border: 4px solid var(--ink);
   background: #fff;
-  padding: 14px;
+  padding: 16px 18px 18px;
 }
 
 .intro-overlay {
@@ -983,19 +885,44 @@ body.home-art-active .app-shell {
   font-size: 18px;
 }
 
-.typed-text {
-  min-height: 52px;
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: 2px;
+.intro-guide-icon {
+  display: block;
+  width: 118px;
+  height: auto;
+  margin: 0 auto 10px;
+  image-rendering: pixelated;
 }
 
-.typed-text .done {
-  color: #059669;
+.typing-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+  font-size: 18px;
+  font-weight: 800;
 }
 
-.typed-text .pending {
-  color: #9ca3af;
+.typing-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 3px solid var(--ink);
+  background: #fffdf2;
+  padding: 8px 10px;
+}
+
+.typing-row span::after {
+  content: ":";
+}
+
+.typing-row strong {
+  min-width: 1.2em;
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: 1px;
 }
 
 .keyboard {
@@ -1003,7 +930,7 @@ body.home-art-active .app-shell {
   gap: 6px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .editor-layout {
@@ -1089,6 +1016,10 @@ body.home-art-active .app-shell {
   .stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .typing-status {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 560px) {
@@ -1152,13 +1083,13 @@ body.home-art-active .app-shell {
   }
 
   .mission-stage {
-    min-height: 460px;
+    min-height: 560px;
   }
 
   .mission-speech {
     left: 20px;
     right: 20px;
-    bottom: 104px;
+    bottom: 208px;
   }
 
   .mission-npc {

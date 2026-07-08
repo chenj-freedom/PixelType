@@ -6,6 +6,10 @@ export function getInitialIntroStatus({ audioEnabled, canSpeak }) {
   return audioEnabled && canSpeak ? 'speaking' : 'ready';
 }
 
+export function shouldBeginPracticeFromKey(key, introStatus) {
+  return introStatus === 'ready' && (key === 'Enter' || key === ' ' || key === 'Space' || key === 'Spacebar');
+}
+
 export function cancelActiveSpeechOnAudioOff(audioEnabled, speechSynthesis) {
   if (audioEnabled || !speechSynthesis || typeof speechSynthesis.cancel !== 'function') return false;
   speechSynthesis.cancel();

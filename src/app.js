@@ -41,12 +41,15 @@
       customArea: '自定义关卡',
       locked: '未解锁',
       startLevel: '开始',
-      introListening: '正在听小向导介绍...',
-      introReady: '介绍听完了，可以开始练习。',
-      beginPractice: '开始练习',
-      currentTarget: '当前目标',
-      typedInput: '当前输入',
-      accuracy: '准确率',
+    introListening: '正在听小向导介绍...',
+    introReady: '介绍听完了，可以开始练习。',
+    beginPractice: '开始练习',
+    typingTarget: '目标',
+    currentTarget: '当前目标',
+    typedInput: '已输入',
+    noneInput: '还没有',
+    nextKey: '下一键',
+    accuracy: '准确率',
       lives: '生命',
       progress: '进度',
       stars: '星星',
@@ -120,12 +123,15 @@
       customArea: 'Custom Levels',
       locked: 'Locked',
       startLevel: 'Start',
-      introListening: 'Listening to the guide...',
-      introReady: 'The introduction is finished. Ready to practice.',
-      beginPractice: 'Start Practice',
-      currentTarget: 'Target',
-      typedInput: 'Input',
-      accuracy: 'Accuracy',
+    introListening: 'Listening to the guide...',
+    introReady: 'The introduction is finished. Ready to practice.',
+    beginPractice: 'Start Practice',
+    typingTarget: 'Target',
+    currentTarget: 'Target',
+    typedInput: 'Typed',
+    noneInput: 'None',
+    nextKey: 'Next Key',
+    accuracy: 'Accuracy',
       lives: 'Lives',
       progress: 'Progress',
       stars: 'Stars',
@@ -210,6 +216,11 @@
 
   document.addEventListener('keydown', (event) => {
     if (state.view !== 'mission' || !state.session) return;
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && shouldBeginPracticeFromKey(event.key, state.introStatus)) {
+      event.preventDefault();
+      beginPractice();
+      return;
+    }
     if (!canAcceptMissionInput(state.introStatus)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
@@ -384,6 +395,7 @@
     const session = state.session;
     const levelData = state.currentLevel;
     const target = getCurrentTarget(session);
+    const typingDisplay = getTypingDisplay(target, session.currentInput);
     const stats = getSessionStats(session);
     const npcText = getNpcText(levelData, session.feedback);
     renderShell(`
@@ -398,12 +410,13 @@
           <div class="stat-box"><span>${tr('stars')}</span>${renderStars(stats.stars)}</div>
         </div>
         <section class="mission-stage">
-          <div class="mission-npc">${tr('guideLabel')}</div>
+          <div class="mission-npc" aria-label="${tr('guideLabel')}">
+            <img class="mission-guide-icon" src="assets/sprites/home-brand-icon.png" alt="">
+          </div>
           <div class="mission-speech">${escapeHtml(npcText)}</div>
           <div class="target-card ${session.feedback === 'error' ? 'error' : ''}">${escapeHtml(target)}</div>
           <div class="input-dock">
-            <div>${tr('typedInput')}</div>
-            <div class="typed-text">${renderTypedText(target, session.currentInput)}</div>
+            ${renderTypingStatus(typingDisplay)}
             <div class="keyboard">${renderKeyboard(levelData.focusKeys, target, session.currentInput)}</div>
           </div>
           ${state.introStatus !== 'playing' ? renderIntroOverlay() : ''}
@@ -743,14 +756,7 @@
     return `
       <div class="intro-overlay">
         <div class="intro-card">
-          <div class="npc-sprite small" aria-hidden="true">
-            <div class="npc-head">
-              <span class="npc-cheek left"></span>
-              <span class="npc-cheek right"></span>
-              <span class="npc-mouth"></span>
-            </div>
-            <div class="npc-body"></div>
-          </div>
+          <img class="intro-guide-icon" src="assets/sprites/home-brand-icon.png" alt="">
           <h3>${isSpeaking ? tr('introListening') : tr('introReady')}</h3>
           <p>${escapeHtml(state.introText)}</p>
           <button class="pixel-btn primary" data-action="begin-practice" ${isSpeaking ? 'disabled' : ''}>${tr('beginPractice')}</button>
@@ -875,6 +881,10 @@
     return audioEnabled && canSpeak ? 'speaking' : 'ready';
   }
 
+  function shouldBeginPracticeFromKey(key, introStatus) {
+    return introStatus === 'ready' && (key === 'Enter' || key === ' ' || key === 'Space' || key === 'Spacebar');
+  }
+
   function cancelActiveSpeechOnAudioOff(audioEnabled, speechSynthesis) {
     if (audioEnabled || !speechSynthesis || typeof speechSynthesis.cancel !== 'function') return false;
     speechSynthesis.cancel();
@@ -919,11 +929,35 @@
     return `<span class="pixel-glyph-slot ${caseClass} ${sizeClass}" style="--glyph-advance:${advance}"><img class="pixel-glyph ${caseClass} ${sizeClass}" src="${src}" alt=""></span>`;
   }
 
-  function renderTypedText(target, input) {
-    return target.split('').map((char, index) => {
-      if (index < input.length) return `<span class="done">${escapeHtml(char)}</span>`;
-      return `<span class="pending">${escapeHtml(index === input.length ? '_' : char)}</span>`;
-    }).join('');
+  function getTypingDisplay(target, input) {
+    const targetText = String(target || '');
+    const typedInput = String(input || '');
+    const nextKey = targetText[typedInput.length] || '';
+
+    return {
+      target: targetText,
+      typedInput,
+      nextKey,
+    };
+  }
+
+  function renderTypingStatus(display) {
+    return `
+      <div class="typing-status">
+        <div class="typing-row">
+          <span>${tr('typingTarget')}</span>
+          <strong>${escapeHtml(display.target)}</strong>
+        </div>
+        <div class="typing-row">
+          <span>${tr('typedInput')}</span>
+          <strong>${escapeHtml(display.typedInput || tr('noneInput'))}</strong>
+        </div>
+        <div class="typing-row">
+          <span>${tr('nextKey')}</span>
+          <strong>${escapeHtml(display.nextKey)}</strong>
+        </div>
+      </div>
+    `;
   }
 
   function renderKeyboard(focusKeys, target, input) {

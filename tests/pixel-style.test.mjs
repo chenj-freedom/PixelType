@@ -729,9 +729,21 @@ test('level map cards use aligned grid positions', () => {
   assert.match(styleSource, /\.level-node\s*{[\s\S]*height:\s*100%/);
 });
 
-test('npc sprites include cartoon face details', () => {
-  assert.match(appSource, /npc-mouth/);
-  assert.match(appSource, /npc-cheek/);
-  assert.match(styleSource, /\.npc-mouth/);
-  assert.match(styleSource, /\.npc-cheek/);
+test('mission practice layout keeps target, guide, and input areas separated', () => {
+  assert.match(styleSource, /\.mission-stage\s*{[\s\S]*min-height:\s*520px/);
+  assert.match(styleSource, /\.target-card\s*{[\s\S]*top:\s*24%/);
+  assert.match(styleSource, /\.mission-speech\s*{[\s\S]*bottom:\s*188px/);
+  assert.match(styleSource, /\.mission-npc\s*{[\s\S]*bottom:\s*188px/);
+  assert.match(styleSource, /\.typing-status\s*{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+});
+
+test('mission guide uses the shared brand icon image and keeps speech bubbles the same height', () => {
+  assert.match(appSource, /<div class="mission-npc" aria-label="\$\{tr\('guideLabel'\)\}">[\s\S]*src="assets\/sprites\/home-brand-icon\.png"/);
+  assert.match(appSource, /<img class="intro-guide-icon" src="assets\/sprites\/home-brand-icon\.png"/);
+  assert.doesNotMatch(appSource, /<div class="mission-npc">\$\{tr\('guideLabel'\)\}<\/div>/);
+  assert.doesNotMatch(appSource, /class="npc-sprite small"/);
+  assert.match(styleSource, /\.mission-npc\s*{[\s\S]*border:\s*0;[\s\S]*background:\s*transparent/);
+  assert.match(styleSource, /\.mission-guide-icon\s*{[\s\S]*width:\s*96px/);
+  assert.match(styleSource, /\.intro-guide-icon\s*{[\s\S]*width:\s*118px/);
+  assert.match(styleSource, /\.mission-speech\s*{[\s\S]*height:\s*78px;[\s\S]*display:\s*flex/);
 });
