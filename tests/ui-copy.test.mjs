@@ -8,7 +8,9 @@ const indexSource = readFileSync(new URL('../index.html', import.meta.url), 'utf
 
 test('home and mission templates use language keys for localized UI copy', () => {
   assert.match(appSource, /tr\('homeIntro'\)/);
-  assert.match(appSource, /tr\('guideLabel'\)/);
+  assert.doesNotMatch(appSource, /tr\('typingTarget'\)/);
+  assert.doesNotMatch(appSource, /tr\('typedInput'\)/);
+  assert.doesNotMatch(appSource, /tr\('nextKey'\)/);
   assert.match(appSource, /tr\('editorDefaultTitle'\)/);
   assert.doesNotMatch(appSource, /\$\{tr\('appSubtitle'\)\}。先从 F 和 J 开始/);
   assert.doesNotMatch(appSource, />向导</);
@@ -50,4 +52,22 @@ test('home sprite tooltips describe audio and language button states', () => {
 test('completed mission results are frozen after the first settlement', () => {
   assert.match(appSource, /function handleMissionKey\(key\)[\s\S]*if \(state\.result \|\| state\.session\.isComplete\) return;/);
   assert.match(appSource, /if \(state\.session\.isComplete && !state\.result\)[\s\S]*state\.result = getSessionStats\(state\.session\);/);
+});
+
+test('free practice starts a standalone mission instead of level one', () => {
+  assert.match(indexSource, /<script src="src\/free-practice\.browser\.js\?v=keyboard-caps-state" defer><\/script>/);
+  assert.match(indexSource, /<script src="src\/app\.js\?v=keyboard-caps-state" defer><\/script>/);
+  assert.match(appSource, /if \(action === 'start-free'\) showFreePractice\(\);/);
+  assert.match(appSource, /if \(action === 'start-free-mode'\) startFreePractice\(button\.dataset\.mode\);/);
+  assert.doesNotMatch(appSource, /if \(action === 'start-free'\) startLevel\('level-1'\);/);
+  assert.match(appSource, /function renderFreePractice\(\)/);
+  assert.match(appSource, /FREE_PRACTICE_MODES\.map/);
+  assert.match(appSource, /function startFreePractice\(modeId = 'mixed'\)/);
+  assert.match(appSource, /buildFreePracticeMission\(modeId\)/);
+});
+
+test('free practice retry and finish do not write map progress', () => {
+  assert.match(appSource, /if \(action === 'retry-level'\) \{\s*if \(state\.currentLevel\?\.isFreePractice\) startFreePractice\(state\.currentLevel\.freePracticeMode\);[\s\S]*else startLevel\(state\.currentLevel\.id\);[\s\S]*\}/);
+  assert.match(appSource, /const continueLabel = state\.currentLevel\?\.isFreePractice \? tr\('backFreePractice'\) : tr\('resultContinue'\);/);
+  assert.match(appSource, /if \(state\.currentLevel\?\.isFreePractice\) \{\s*showFreePractice\(\);[\s\S]*return;[\s\S]*\}/);
 });

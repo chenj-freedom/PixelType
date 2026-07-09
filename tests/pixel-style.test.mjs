@@ -753,21 +753,93 @@ test('level map cards use aligned grid positions', () => {
   assert.match(styleSource, /\.level-node\s*{[\s\S]*height:\s*100%/);
 });
 
-test('mission practice layout keeps target, guide, and input areas separated', () => {
-  assert.match(styleSource, /\.mission-stage\s*{[\s\S]*min-height:\s*520px/);
-  assert.match(styleSource, /\.target-card\s*{[\s\S]*top:\s*24%/);
-  assert.match(styleSource, /\.mission-speech\s*{[\s\S]*bottom:\s*188px/);
-  assert.match(styleSource, /\.mission-npc\s*{[\s\S]*bottom:\s*188px/);
-  assert.match(styleSource, /\.typing-status\s*{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+test('mission practice layout keeps target and input areas in separate flow regions', () => {
+  assert.match(styleSource, /\.mission-screen\s*{[\s\S]*padding:\s*14px 20px/);
+  assert.match(styleSource, /\.app-shell:has\(\.mission-screen\)\s*{[\s\S]*margin:\s*0 auto/);
+  assert.match(styleSource, /\.stats-row\s*{[\s\S]*margin:\s*10px 0 12px/);
+  assert.match(styleSource, /\.mission-stage\s*{[\s\S]*height:\s*clamp\(450px,\s*calc\(100vh - 288px\),\s*600px\)/);
+  assert.match(styleSource, /\.mission-stage\s*{[\s\S]*display:\s*grid/);
+  assert.match(styleSource, /\.mission-stage\s*{[\s\S]*grid-template-rows:\s*minmax\(190px,\s*1fr\) auto/);
+  assert.match(styleSource, /\.mission-target-zone\s*{[\s\S]*align-items:\s*center/);
+  assert.match(styleSource, /\.target-card\s*{[\s\S]*position:\s*relative/);
+  assert.doesNotMatch(styleSource, /\.target-card\s*{[\s\S]*top:\s*24%/);
+  assert.match(styleSource, /\.input-dock\s*{[\s\S]*position:\s*relative/);
+  assert.doesNotMatch(appSource, /class="mission-feedback"/);
+  assert.doesNotMatch(styleSource, /\.mission-feedback\s*{/);
+  assert.doesNotMatch(appSource, /renderTypingStatus/);
+  assert.doesNotMatch(styleSource, /\.typing-status\s*{/);
+  assert.doesNotMatch(styleSource, /\.typing-row\s*{/);
+  assert.match(styleSource, /\.intro-overlay\s*{[\s\S]*z-index:\s*10/);
 });
 
-test('mission guide uses the shared brand icon image and keeps speech bubbles the same height', () => {
-  assert.match(appSource, /<div class="mission-npc" aria-label="\$\{tr\('guideLabel'\)\}">[\s\S]*src="assets\/sprites\/home-brand-icon\.png"/);
+test('mission practice removes the constant guide bubble while keeping the intro guide icon', () => {
+  assert.doesNotMatch(appSource, /class="mission-npc"/);
+  assert.doesNotMatch(appSource, /class="mission-speech"/);
   assert.match(appSource, /<img class="intro-guide-icon" src="assets\/sprites\/home-brand-icon\.png"/);
   assert.doesNotMatch(appSource, /<div class="mission-npc">\$\{tr\('guideLabel'\)\}<\/div>/);
   assert.doesNotMatch(appSource, /class="npc-sprite small"/);
-  assert.match(styleSource, /\.mission-npc\s*{[\s\S]*border:\s*0;[\s\S]*background:\s*transparent/);
-  assert.match(styleSource, /\.mission-guide-icon\s*{[\s\S]*width:\s*96px/);
   assert.match(styleSource, /\.intro-guide-icon\s*{[\s\S]*width:\s*118px/);
-  assert.match(styleSource, /\.mission-speech\s*{[\s\S]*height:\s*78px;[\s\S]*display:\s*flex/);
+});
+
+test('mission keyboard renders fixed QWERTY rows with case and symbol keys', () => {
+  assert.match(appSource, /const KEYBOARD_ROWS = \[/);
+  assert.match(appSource, /const SPACE_KEY_ROW = \[\{ key: 'Space', column: 8, span: 10 \}\]/);
+  assert.match(appSource, /keyboardCase:\s*'lower'/);
+  assert.match(appSource, /syncKeyboardCaseFromEvent\(event\)/);
+  assert.match(appSource, /event\.getModifierState\('CapsLock'\)/);
+  assert.match(appSource, /if \(isCapsLockEvent\(event\)\)/);
+  assert.match(appSource, /function isCapsLockEvent\(event\)/);
+  assert.match(appSource, /event\?\.key === 'CapsLock' \|\| event\?\.code === 'CapsLock'/);
+  assert.match(appSource, /function isMissionTypingEvent\(event\)/);
+  assert.match(appSource, /if \(!isMissionTypingEvent\(event\)\)/);
+  assert.match(appSource, /\['top-row', 'home-row', 'bottom-row'\]/);
+  assert.match(appSource, /\{ key: 'Q', column: 3 \}/);
+  assert.match(appSource, /\{ key: 'W', column: 5 \}/);
+  assert.match(appSource, /\{ key: 'A', column: 4 \}/);
+  assert.match(appSource, /\{ key: 'Z', column: 5 \}/);
+  assert.match(appSource, /\{ key: ';', column: 22 \}/);
+  assert.match(appSource, /\{ key: '\?', column: 23 \}/);
+  assert.doesNotMatch(appSource, /\{ key: '!', column:/);
+  assert.doesNotMatch(appSource, /const rowKeys = row\.filter\(\(key\) => visibleKeys\.has\(key\)\)/);
+  assert.doesNotMatch(appSource, /if \(rowKeys\.length === 0\) return '';/);
+  assert.match(appSource, /<div class="keyboard-row \$\{rowClass\}">/);
+  assert.match(appSource, /<div class="keyboard-row space-row">/);
+  assert.doesNotMatch(appSource, /class="keyboard-row special-row"/);
+  assert.doesNotMatch(appSource, /\['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'Space'/);
+  assert.match(appSource, /data-action="toggle-keyboard-case"/);
+  assert.match(appSource, />Caps<\/button>/);
+  assert.doesNotMatch(appSource, /CapsLk/);
+  assert.doesNotMatch(appSource, /state\.keyboardCase === 'upper' \? 'abc' : 'ABC'/);
+  assert.match(appSource, /state\.keyboardCase === 'upper' \|\| needsCaps/);
+  assert.match(appSource, /function shouldHighlightCaps\(key\)/);
+  assert.match(appSource, /isUppercaseLetter\(key\) && state\.keyboardCase !== 'upper'/);
+  assert.match(appSource, /state\.keyboardCase === 'upper' \? key : key\.toLowerCase\(\)/);
+  assert.match(appSource, /key === 'Space'/);
+  assert.match(appSource, /key === 'Case'/);
+  assert.match(styleSource, /\.keyboard\s*{[\s\S]*display:\s*grid/);
+  assert.match(styleSource, /\.keyboard\s*{[\s\S]*justify-items:\s*center/);
+  assert.match(styleSource, /\.keyboard-row\s*{[\s\S]*display:\s*grid/);
+  assert.match(styleSource, /\.keyboard-row\s*{[\s\S]*grid-template-columns:\s*repeat\(24,\s*16px\)/);
+  assert.match(styleSource, /\.keyboard-row\s*{[\s\S]*width:\s*max-content/);
+  assert.match(styleSource, /\.keyboard-row\s*{[\s\S]*justify-content:\s*center/);
+  assert.match(styleSource, /\.keyboard-row\s*{[\s\S]*grid-column:\s*var\(--key-column\) \/ span var\(--key-span,\s*2\)/);
+  assert.match(styleSource, /\.keyboard-row\.space-row\s*{[\s\S]*padding-left:\s*0/);
+  assert.match(styleSource, /\.space-key\s*{[\s\S]*width:\s*100%/);
+  assert.match(styleSource, /\.case-key\s*{/);
+  assert.match(styleSource, /\.case-key\.active:hover,\s*\.case-key\.active:focus-visible\s*{[\s\S]*background:\s*var\(--sun\)/);
+  assert.match(styleSource, /\.symbol-key\s*{/);
+});
+
+test('target error feedback keeps the card in place with a small red shake', () => {
+  const errorRule = styleSource.match(/\.target-card\.error\s*{[\s\S]*?}/)?.[0] || '';
+  assert.match(errorRule, /background:\s*#ffd1dc/);
+  assert.match(errorRule, /border-color:\s*#e4485f/);
+  assert.doesNotMatch(errorRule, /animation:/);
+  assert.match(styleSource, /\.target-card\.shake\s*{[\s\S]*animation:\s*shake 150ms linear 2/);
+  assert.match(appSource, /function triggerTargetShake\(\)/);
+  assert.match(appSource, /const shouldShakeTarget = inputWasScored && state\.session\.feedback === 'error'/);
+  assert.match(appSource, /if \(shouldShakeTarget\) triggerTargetShake\(\)/);
+  assert.match(styleSource, /@keyframes shake\s*{[\s\S]*translateX\(0\)[\s\S]*translateX\(-2px\)[\s\S]*translateX\(2px\)[\s\S]*translateX\(0\)/);
+  assert.doesNotMatch(styleSource, /translate\(calc\(-50%/);
+  assert.doesNotMatch(styleSource, /translateX\(-8px\)|translateX\(8px\)|translateX\(-6px\)|translateX\(6px\)/);
 });

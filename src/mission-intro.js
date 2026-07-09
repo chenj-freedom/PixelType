@@ -10,6 +10,16 @@ export function shouldBeginPracticeFromKey(key, introStatus) {
   return introStatus === 'ready' && (key === 'Enter' || key === ' ' || key === 'Space' || key === 'Spacebar');
 }
 
+export function isCapsLockEvent(event) {
+  return event?.key === 'CapsLock' || event?.code === 'CapsLock';
+}
+
+export function isMissionTypingEvent(event) {
+  if (!event || event.ctrlKey || event.metaKey || event.altKey) return false;
+  if (isCapsLockEvent(event)) return false;
+  return typeof event.key === 'string' && event.key.length === 1;
+}
+
 export function cancelActiveSpeechOnAudioOff(audioEnabled, speechSynthesis) {
   if (audioEnabled || !speechSynthesis || typeof speechSynthesis.cancel !== 'function') return false;
   speechSynthesis.cancel();

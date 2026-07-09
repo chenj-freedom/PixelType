@@ -6,6 +6,8 @@ import {
   cancelActiveSpeechOnAudioOff,
   getIntroFallbackMinimumMs,
   getInitialIntroStatus,
+  isCapsLockEvent,
+  isMissionTypingEvent,
   shouldBeginPracticeFromKey,
   shouldCompleteIntroFallback,
 } from '../src/mission-intro.js';
@@ -36,6 +38,23 @@ test('starts practice from keyboard only after the introduction is ready', () =>
 
 test('mission keydown starts ready intro with Enter or Space before typing input is accepted', () => {
   assert.match(appSource, /document\.addEventListener\('keydown', \(event\) => {[\s\S]*shouldBeginPracticeFromKey\(event\.key, state\.introStatus\)[\s\S]*beginPractice\(\);[\s\S]*if \(!canAcceptMissionInput\(state\.introStatus\)\) return;/);
+});
+
+test('caps lock is treated as a function key, not mission typing input', () => {
+  assert.equal(isCapsLockEvent({ key: 'CapsLock', code: 'CapsLock' }), true);
+  assert.equal(isCapsLockEvent({ key: 'CapsLock', code: '' }), true);
+  assert.equal(isCapsLockEvent({ key: 'D', code: 'CapsLock' }), true);
+  assert.equal(isMissionTypingEvent({ key: 'D', code: 'CapsLock' }), false);
+  assert.equal(isMissionTypingEvent({ key: 'CapsLock', code: 'CapsLock' }), false);
+});
+
+test('mission typing input accepts printable keys only', () => {
+  assert.equal(isMissionTypingEvent({ key: 'f', code: 'KeyF' }), true);
+  assert.equal(isMissionTypingEvent({ key: ' ', code: 'Space' }), true);
+  assert.equal(isMissionTypingEvent({ key: 'Shift', code: 'ShiftLeft' }), false);
+  assert.equal(isMissionTypingEvent({ key: 'f', code: 'KeyF', ctrlKey: true }), false);
+  assert.equal(isMissionTypingEvent({ key: 'f', code: 'KeyF', altKey: true }), false);
+  assert.equal(isMissionTypingEvent({ key: 'f', code: 'KeyF', metaKey: true }), false);
 });
 
 test('does not complete fallback while browser speech is still active', () => {

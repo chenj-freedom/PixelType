@@ -1,4 +1,6 @@
 (function () {
+  const { FREE_PRACTICE_MODES, buildFreePracticeMission } = window.PixelTypeFreePractice;
+
   const BUILT_IN_LEVELS = [
     level('level-1', 1, 'level.homeRowIndex', 'level.homeRowIndex.subtitle', ['F', 'J'], ['f', 'j', 'fj', 'jf', 'ff', 'jj', 'fjfj', 'jfjf'], 85, 'npc.level1'),
     level('level-2', 2, 'level.leftHome', 'level.leftHome.subtitle', ['A', 'S', 'D', 'F'], ['a', 's', 'd', 'f', 'as', 'sad', 'dad', 'fad'], 85, 'npc.level2'),
@@ -24,6 +26,47 @@
     T: 11,
   };
 
+  const KEYBOARD_ROWS = [
+    [
+      { key: 'Q', column: 3 },
+      { key: 'W', column: 5 },
+      { key: 'E', column: 7 },
+      { key: 'R', column: 9 },
+      { key: 'T', column: 11 },
+      { key: 'Y', column: 13 },
+      { key: 'U', column: 15 },
+      { key: 'I', column: 17 },
+      { key: 'O', column: 19 },
+      { key: 'P', column: 21 },
+    ],
+    [
+      { key: 'Case', column: 1, span: 3 },
+      { key: 'A', column: 4 },
+      { key: 'S', column: 6 },
+      { key: 'D', column: 8 },
+      { key: 'F', column: 10 },
+      { key: 'G', column: 12 },
+      { key: 'H', column: 14 },
+      { key: 'J', column: 16 },
+      { key: 'K', column: 18 },
+      { key: 'L', column: 20 },
+      { key: ';', column: 22 },
+    ],
+    [
+      { key: 'Z', column: 5 },
+      { key: 'X', column: 7 },
+      { key: 'C', column: 9 },
+      { key: 'V', column: 11 },
+      { key: 'B', column: 13 },
+      { key: 'N', column: 15 },
+      { key: 'M', column: 17 },
+      { key: '.', column: 19 },
+      { key: ',', column: 21 },
+      { key: '?', column: 23 },
+    ],
+  ];
+  const SPACE_KEY_ROW = [{ key: 'Space', column: 8, span: 10 }];
+
   const STRINGS = {
     'zh-CN': {
       appTitle: 'PixelType',
@@ -34,6 +77,16 @@
       switchToEnglish: 'English',
       startAdventure: '开始闯关',
       freePractice: '自由练习',
+      freePracticeSubtitle: '混合复习',
+      freePracticeChoose: '选择一种练习方式，每次都会重新生成内容。',
+      freePracticeLetters: '随机字母',
+      freePracticeLettersSubtitle: '练习字母和常见组合',
+      freePracticeWords: '随机单词',
+      freePracticeWordsSubtitle: '从单词池随机抽取',
+      freePracticeSentences: '随机句子',
+      freePracticeSentencesSubtitle: '练习空格和标点',
+      freePracticeMixed: '混合练习',
+      freePracticeMixedSubtitle: '字母、单词、句子一起复习',
       editLevels: '编辑关卡',
       backHome: '返回首页',
       backMap: '返回地图',
@@ -58,6 +111,7 @@
       resultTitle: '关卡完成',
       resultRetry: '再练一次',
       resultContinue: '回到地图',
+      backFreePractice: '返回自由练习',
       editorTitle: '关卡编辑器',
       editorName: '关卡名称',
       editorDefaultTitle: '动物单词',
@@ -103,6 +157,11 @@
       'level.shortSentences': '短句挑战',
       'level.shortSentences.subtitle': '输入完整短句',
       'npc.home': '准备好了吗？把左右食指放在 F 和 J 上，我们出发吧！',
+      'npc.freePractice': '这里是自由练习。不会影响闯关进度，按自己的节奏复习吧。',
+      'npc.freePracticeLetters': '先热热手。看准字母和组合，稳定地输入。',
+      'npc.freePracticeWords': '现在练随机单词。先看完整单词，再开始输入。',
+      'npc.freePracticeSentences': '句子练习会遇到空格和标点。一个字符一个字符来。',
+      'npc.freePracticeMixed': '混合练习开始。字母、单词和句子都会出现。',
       'npc.level1': '这一关只找 F 和 J。两个键上通常有小凸点，可以摸一摸。',
       'npc.level2': '左手小队登场。慢慢来，先保证准确。',
       'npc.level3': '现在换右手小队。眼睛看目标，手指轻轻移动。',
@@ -121,6 +180,16 @@
       switchToEnglish: 'English',
       startAdventure: 'Start Adventure',
       freePractice: 'Free Practice',
+      freePracticeSubtitle: 'Mixed Review',
+      freePracticeChoose: 'Choose a practice mode. New targets are generated every time.',
+      freePracticeLetters: 'Random Letters',
+      freePracticeLettersSubtitle: 'Practice letters and common combos',
+      freePracticeWords: 'Random Words',
+      freePracticeWordsSubtitle: 'Draw from the word pool',
+      freePracticeSentences: 'Random Sentences',
+      freePracticeSentencesSubtitle: 'Practice spaces and punctuation',
+      freePracticeMixed: 'Mixed Practice',
+      freePracticeMixedSubtitle: 'Review letters, words, and sentences',
       editLevels: 'Level Editor',
       backHome: 'Home',
       backMap: 'Map',
@@ -145,6 +214,7 @@
       resultTitle: 'Level Complete',
       resultRetry: 'Try Again',
       resultContinue: 'Back to Map',
+      backFreePractice: 'Back to Free Practice',
       editorTitle: 'Level Editor',
       editorName: 'Level Name',
       editorDefaultTitle: 'Animal Words',
@@ -190,6 +260,11 @@
       'level.shortSentences': 'Short Sentences',
       'level.shortSentences.subtitle': 'Type complete sentences',
       'npc.home': 'Ready? Put your index fingers on F and J. Let us go!',
+      'npc.freePractice': 'This is free practice. It will not change map progress, so review at your own pace.',
+      'npc.freePracticeLetters': 'Warm up first. Watch each letter or combo and type steadily.',
+      'npc.freePracticeWords': 'Random words now. Read the whole word, then type.',
+      'npc.freePracticeSentences': 'Sentence practice includes spaces and punctuation. Type one character at a time.',
+      'npc.freePracticeMixed': 'Mixed practice starts now. Letters, words, and sentences may appear.',
       'npc.level1': 'This level is only about F and J. Feel the tiny bumps on the keys.',
       'npc.level2': 'Left-hand team, your turn. Accuracy first.',
       'npc.level3': 'Right-hand team now. Watch the target and move gently.',
@@ -219,6 +294,7 @@
     introStatus: 'idle',
     introText: '',
     introToken: 0,
+    keyboardCase: 'lower',
     result: null,
   };
 
@@ -226,14 +302,25 @@
 
   document.addEventListener('keydown', (event) => {
     if (state.view !== 'mission' || !state.session) return;
+    const keyboardCaseChanged = syncKeyboardCaseFromEvent(event);
+    if (isCapsLockEvent(event)) {
+      event.preventDefault();
+      if (keyboardCaseChanged) render();
+      return;
+    }
     if (!event.ctrlKey && !event.metaKey && !event.altKey && shouldBeginPracticeFromKey(event.key, state.introStatus)) {
       event.preventDefault();
       beginPractice();
       return;
     }
-    if (!canAcceptMissionInput(state.introStatus)) return;
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (event.key.length !== 1) return;
+    if (!canAcceptMissionInput(state.introStatus)) {
+      if (keyboardCaseChanged) render();
+      return;
+    }
+    if (!isMissionTypingEvent(event)) {
+      if (keyboardCaseChanged) render();
+      return;
+    }
     event.preventDefault();
     handleMissionKey(event.key);
   });
@@ -260,6 +347,7 @@
     document.body.classList.toggle('home-art-active', state.view === 'home');
     if (state.view === 'map') renderMap();
     else if (state.view === 'mission') renderMission();
+    else if (state.view === 'free-practice') renderFreePractice();
     else if (state.view === 'editor') renderEditor();
     else renderHome();
   }
@@ -391,6 +479,37 @@
     });
   }
 
+  function renderFreePractice() {
+    renderShell(`
+      <div class="free-practice-screen">
+        <div class="toolbar">
+          <button class="pixel-btn" data-action="home">${tr('backHome')}</button>
+        </div>
+        <section class="free-practice-board">
+          <div class="free-practice-heading">
+            <h2>${tr('freePractice')}</h2>
+            <p>${tr('freePracticeChoose')}</p>
+          </div>
+          <div class="free-practice-grid">
+            ${FREE_PRACTICE_MODES.map((mode) => renderFreePracticeMode(mode)).join('')}
+          </div>
+        </section>
+      </div>
+    `);
+  }
+
+  function renderFreePracticeMode(mode) {
+    return `
+      <button class="free-practice-mode" data-action="start-free-mode" data-mode="${mode.id}">
+        <span class="free-mode-badge">${mode.id === 'letters' ? 'A-Z' : mode.id === 'words' ? 'ABC' : mode.id === 'sentences' ? 'Aa.' : 'Mix'}</span>
+        <span class="free-mode-copy">
+          <strong>${tr(mode.titleKey)}</strong>
+          <span>${tr(mode.subtitleKey)}</span>
+        </span>
+      </button>
+    `;
+  }
+
   function renderLevelNode(item) {
     const unlocked = item.isCustom || state.progress.unlockedLevelIds.includes(item.id);
     const stars = state.progress.levelStars[item.id] || 0;
@@ -412,13 +531,13 @@
     const session = state.session;
     const levelData = state.currentLevel;
     const target = getCurrentTarget(session);
-    const typingDisplay = getTypingDisplay(target, session.currentInput);
     const stats = getSessionStats(session);
-    const npcText = getNpcText(levelData, session.feedback);
+    const backAction = levelData.isFreePractice ? 'start-free' : 'show-map';
+    const backLabel = levelData.isFreePractice ? tr('freePractice') : tr('backMap');
     renderShell(`
       <div class="mission-screen">
         <div class="toolbar">
-          <button class="pixel-btn" data-action="show-map">${tr('backMap')}</button>
+          <button class="pixel-btn" data-action="${backAction}">${backLabel}</button>
         </div>
         <div class="stats-row">
           <div class="stat-box"><span>${tr('progress')}</span>${session.completedTargets}/${session.targets.length}</div>
@@ -427,14 +546,11 @@
           <div class="stat-box"><span>${tr('stars')}</span>${renderStars(stats.stars)}</div>
         </div>
         <section class="mission-stage">
-          <div class="mission-npc" aria-label="${tr('guideLabel')}">
-            <img class="mission-guide-icon" src="assets/sprites/home-brand-icon.png" alt="">
+          <div class="mission-target-zone">
+            <div class="target-card ${session.feedback === 'error' ? 'error' : ''}">${escapeHtml(target)}</div>
           </div>
-          <div class="mission-speech">${escapeHtml(npcText)}</div>
-          <div class="target-card ${session.feedback === 'error' ? 'error' : ''}">${escapeHtml(target)}</div>
           <div class="input-dock">
-            ${renderTypingStatus(typingDisplay)}
-            <div class="keyboard">${renderKeyboard(levelData.focusKeys, target, session.currentInput)}</div>
+            <div class="keyboard">${renderKeyboard(target, session.currentInput)}</div>
           </div>
           ${state.introStatus !== 'playing' ? renderIntroOverlay() : ''}
         </section>
@@ -491,6 +607,7 @@
 
   function renderResultModal() {
     const result = state.result;
+    const continueLabel = state.currentLevel?.isFreePractice ? tr('backFreePractice') : tr('resultContinue');
     return `
       <div class="result-modal">
         <div class="result-card">
@@ -500,7 +617,7 @@
           <p>${tr('wpm')}：${result.wpm}</p>
           <div class="hero-actions" style="justify-content:center">
             <button class="pixel-btn secondary" data-action="retry-level">${tr('resultRetry')}</button>
-            <button class="pixel-btn primary" data-action="finish-level">${tr('resultContinue')}</button>
+            <button class="pixel-btn primary" data-action="finish-level">${continueLabel}</button>
           </div>
         </div>
       </div>
@@ -516,9 +633,14 @@
         if (action === 'show-map') showMap();
         if (action === 'home') showHome();
         if (action === 'show-editor') showEditor();
-        if (action === 'start-free') startLevel('level-1');
+        if (action === 'start-free') showFreePractice();
+        if (action === 'start-free-mode') startFreePractice(button.dataset.mode);
         if (action === 'begin-practice') beginPractice();
-        if (action === 'retry-level') startLevel(state.currentLevel.id);
+        if (action === 'toggle-keyboard-case') toggleKeyboardCase();
+        if (action === 'retry-level') {
+          if (state.currentLevel?.isFreePractice) startFreePractice(state.currentLevel.freePracticeMode);
+          else startLevel(state.currentLevel.id);
+        }
         if (action === 'finish-level') finishLevel();
       });
     });
@@ -536,6 +658,16 @@
 
   function showMap() {
     state.view = 'map';
+    state.introStatus = 'idle';
+    state.introToken += 1;
+    state.result = null;
+    render();
+  }
+
+  function showFreePractice() {
+    state.view = 'free-practice';
+    state.currentLevel = null;
+    state.session = null;
     state.introStatus = 'idle';
     state.introToken += 1;
     state.result = null;
@@ -581,6 +713,19 @@
   function startLevel(levelId) {
     const item = getLevels().find((candidate) => candidate.id === levelId);
     if (!item) return;
+    startMission(item);
+  }
+
+  function startFreePractice(modeId = 'mixed') {
+    const mission = buildFreePracticeMission(modeId);
+    startMission({
+      ...mission,
+      title: tr(mission.titleKey),
+      subtitle: tr(mission.subtitleKey),
+    });
+  }
+
+  function startMission(item) {
     state.currentLevel = item;
     state.session = createTypingSession({
       targets: item.targets,
@@ -595,10 +740,34 @@
     });
     state.result = null;
     state.view = 'mission';
+    state.keyboardCase = 'lower';
     if (state.introStatus === 'speaking') {
       speakIntro(state.introText, item.npcLanguage || state.language, introToken);
     }
     render();
+  }
+
+  function toggleKeyboardCase() {
+    state.keyboardCase = state.keyboardCase === 'upper' ? 'lower' : 'upper';
+    render();
+  }
+
+  function syncKeyboardCaseFromEvent(event) {
+    if (!event || typeof event.getModifierState !== 'function') return false;
+    const nextCase = event.getModifierState('CapsLock') ? 'upper' : 'lower';
+    if (state.keyboardCase === nextCase) return false;
+    state.keyboardCase = nextCase;
+    return true;
+  }
+
+  function isCapsLockEvent(event) {
+    return event?.key === 'CapsLock' || event?.code === 'CapsLock';
+  }
+
+  function isMissionTypingEvent(event) {
+    if (!event || event.ctrlKey || event.metaKey || event.altKey) return false;
+    if (isCapsLockEvent(event)) return false;
+    return typeof event.key === 'string' && event.key.length === 1;
   }
 
   function beginPractice() {
@@ -612,11 +781,28 @@
     render();
   }
 
+  function triggerTargetShake() {
+    const targetCard = document.querySelector('.target-card.error');
+    if (!targetCard) return;
+    targetCard.classList.remove('shake');
+    void targetCard.offsetWidth;
+    targetCard.addEventListener('animationend', () => {
+      targetCard.classList.remove('shake');
+    }, { once: true });
+    targetCard.classList.add('shake');
+  }
+
   function handleMissionKey(key) {
     if (!canAcceptMissionInput(state.introStatus)) return;
     if (state.result || state.session.isComplete) return;
     const previousFeedback = state.session.feedback;
+    const previousTotalKeys = state.session.totalKeys;
     state.session = handleTypingKey(state.session, key);
+    const inputWasScored = state.session.totalKeys > previousTotalKeys;
+    const shouldShakeTarget = inputWasScored && state.session.feedback === 'error';
+    if (!inputWasScored) {
+      return;
+    }
     if (state.session.feedback === 'error') {
       playFeedbackSound('error');
     } else if (state.session.feedback === 'correct' || state.session.feedback === 'target-complete') {
@@ -630,9 +816,14 @@
       speak(tr('completeHint'), state.language);
     }
     render();
+    if (shouldShakeTarget) triggerTargetShake();
   }
 
   function finishLevel() {
+    if (state.currentLevel?.isFreePractice) {
+      showFreePractice();
+      return;
+    }
     const orderedLevelIds = getLevels().map((item) => item.id);
     state.progress = saveLevelResult(state.currentLevel.id, state.result, orderedLevelIds);
     state.result = null;
@@ -946,49 +1137,51 @@
     return `<span class="pixel-glyph-slot ${caseClass} ${sizeClass}" style="--glyph-advance:${advance}"><img class="pixel-glyph ${caseClass} ${sizeClass}" src="${src}" alt=""></span>`;
   }
 
-  function getTypingDisplay(target, input) {
-    const targetText = String(target || '');
-    const typedInput = String(input || '');
-    const nextKey = targetText[typedInput.length] || '';
-
-    return {
-      target: targetText,
-      typedInput,
-      nextKey,
-      nextKeyLabel: getNextKeyLabel(nextKey),
-    };
-  }
-
-  function getNextKeyLabel(key) {
-    if (key === ' ') return tr('spaceKey');
-    return key;
-  }
-
-  function renderTypingStatus(display) {
-    return `
-      <div class="typing-status">
-        <div class="typing-row">
-          <span>${tr('typingTarget')}</span>
-          <strong>${escapeHtml(display.target)}</strong>
-        </div>
-        <div class="typing-row">
-          <span>${tr('typedInput')}</span>
-          <strong>${escapeHtml(display.typedInput || tr('noneInput'))}</strong>
-        </div>
-        <div class="typing-row">
-          <span>${tr('nextKey')}</span>
-          <strong>${escapeHtml(display.nextKeyLabel)}</strong>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderKeyboard(focusKeys, target, input) {
-    const next = target[input.length]?.toUpperCase();
-    return focusKeys.map((key) => {
-      const active = key === next ? 'active' : '';
-      return `<span class="keycap ${active}">${escapeHtml(key)}</span>`;
+  function renderKeyboard(target, input) {
+    const rawNext = target[input.length];
+    const next = getKeyboardKeyName(rawNext);
+    const needsCaps = shouldHighlightCaps(rawNext);
+    const letterRows = KEYBOARD_ROWS.map((row, index) => {
+      const rowClass = ['top-row', 'home-row', 'bottom-row'][index];
+      return `<div class="keyboard-row ${rowClass}">${row.map((keyConfig) => renderKeycap(keyConfig, next, needsCaps)).join('')}</div>`;
     }).join('');
+    const spaceRow = `<div class="keyboard-row space-row">${SPACE_KEY_ROW.map((keyConfig) => renderKeycap(keyConfig, next, needsCaps)).join('')}</div>`;
+    return `${letterRows}${spaceRow}`;
+  }
+
+  function renderKeycap(keyConfig, next, needsCaps = false) {
+    const key = typeof keyConfig === 'string' ? keyConfig : keyConfig.key;
+    const column = typeof keyConfig === 'string' ? '' : `--key-column:${keyConfig.column};`;
+    const span = typeof keyConfig === 'string' || !keyConfig.span ? '' : `--key-span:${keyConfig.span};`;
+    const style = column || span ? ` style="${column}${span}"` : '';
+    if (key === 'Case') {
+      const active = state.keyboardCase === 'upper' || needsCaps ? 'active' : '';
+      const classes = ['keycap', 'case-key', active].filter(Boolean).join(' ');
+      return `<button class="${classes}" data-action="toggle-keyboard-case" type="button"${style}>Caps</button>`;
+    }
+    const active = key === next ? 'active' : '';
+    const isLetter = /^[A-Z]$/.test(key);
+    const label = isLetter ? (state.keyboardCase === 'upper' ? key : key.toLowerCase()) : key;
+    const classes = [
+      'keycap',
+      active,
+      key === 'Space' ? 'space-key' : '',
+      !isLetter && key !== 'Space' ? 'symbol-key' : '',
+    ].filter(Boolean).join(' ');
+    return `<span class="${classes}"${style}>${escapeHtml(label)}</span>`;
+  }
+
+  function getKeyboardKeyName(key) {
+    if (key === ' ') return 'Space';
+    return key?.toUpperCase();
+  }
+
+  function shouldHighlightCaps(key) {
+    return isUppercaseLetter(key) && state.keyboardCase !== 'upper';
+  }
+
+  function isUppercaseLetter(key) {
+    return /^[A-Z]$/.test(key || '');
   }
 
   function loadValue(key, fallback) {
