@@ -1,5 +1,6 @@
 (function () {
   const { FREE_PRACTICE_MODES, buildFreePracticeMission } = window.PixelTypeFreePractice;
+  const UNLOCK_REQUIRED_STARS = 2;
 
   const BUILT_IN_LEVELS = [
     level('level-1', 1, 'level.homeRowIndex', 'level.homeRowIndex.subtitle', ['F', 'J'], ['f', 'j', 'fj', 'jf', 'ff', 'jj', 'fjfj', 'jfjf'], 85, 'npc.level1'),
@@ -91,6 +92,9 @@
       backHome: '返回首页',
       backMap: '返回地图',
       mapTitle: '闯关地图',
+      unlockHint: '达到 2 星解锁下一关',
+      unlockReady: '已达到 2 星，可以解锁下一关。',
+      unlockNeedsMoreStars: '达到 2 星才能解锁下一关。',
       customArea: '自定义关卡',
       locked: '未解锁',
       startLevel: '开始',
@@ -194,6 +198,9 @@
       backHome: 'Home',
       backMap: 'Map',
       mapTitle: 'Level Map',
+      unlockHint: 'Earn 2 stars to unlock the next level',
+      unlockReady: 'You earned 2 stars. The next level can unlock.',
+      unlockNeedsMoreStars: 'Earn 2 stars to unlock the next level.',
       customArea: 'Custom Levels',
       locked: 'Locked',
       startLevel: 'Start',
@@ -467,6 +474,7 @@
           <button class="pixel-btn secondary" data-action="show-editor">${tr('editLevels')}</button>
         </div>
         <h2>${tr('mapTitle')}</h2>
+        <p class="unlock-hint">${tr('unlockHint')}</p>
         <section class="map-board" aria-label="${tr('mapTitle')}">
           <div class="map-grid adventure-path">
             ${levels.map((item) => renderLevelNode(item)).join('')}
@@ -609,6 +617,9 @@
   function renderResultModal() {
     const result = state.result;
     const continueLabel = state.currentLevel?.isFreePractice ? tr('backFreePractice') : tr('resultContinue');
+    const unlockNote = state.currentLevel?.isFreePractice
+      ? ''
+      : `<p class="result-unlock-note">${shouldUnlockNextLevel(result) ? tr('unlockReady') : tr('unlockNeedsMoreStars')}</p>`;
     return `
       <div class="result-modal">
         <div class="result-card">
@@ -616,6 +627,7 @@
           <div class="result-stars">${renderStars(result.stars)}</div>
           <p>${tr('accuracy')}：${result.accuracy}%</p>
           <p>${tr('wpm')}：${result.wpm}</p>
+          ${unlockNote}
           <div class="hero-actions" style="justify-content:center">
             <button class="pixel-btn secondary" data-action="retry-level">${tr('resultRetry')}</button>
             <button class="pixel-btn primary" data-action="finish-level">${continueLabel}</button>
@@ -918,7 +930,7 @@
   function saveLevelResult(levelId, result, orderedLevelIds) {
     const previousStars = state.progress.levelStars[levelId] || 0;
     state.progress.levelStars[levelId] = Math.max(previousStars, result.stars || 0);
-    if (result.passed) {
+    if (shouldUnlockNextLevel(result)) {
       const index = orderedLevelIds.indexOf(levelId);
       const nextLevel = orderedLevelIds[index + 1];
       if (nextLevel && !state.progress.unlockedLevelIds.includes(nextLevel)) {
@@ -927,6 +939,10 @@
     }
     localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(state.progress));
     return state.progress;
+  }
+
+  function shouldUnlockNextLevel(result) {
+    return result.passed && (result.stars || 0) >= UNLOCK_REQUIRED_STARS;
   }
 
   function normalizeCustomLevel(input) {

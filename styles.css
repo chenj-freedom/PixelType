@@ -733,6 +733,13 @@ body.home-art-active .app-shell {
   margin: 12px 0 0;
 }
 
+.unlock-hint {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(31, 41, 51, 0.78);
+}
+
 .map-board {
   margin-top: 18px;
   border: 4px solid var(--ink);
@@ -1183,6 +1190,12 @@ body.home-art-active .app-shell {
   font-size: 52px;
   color: #f59e0b;
   text-shadow: 2px 2px 0 var(--ink);
+}
+
+.result-unlock-note {
+  margin: 10px auto 18px;
+  font-weight: 800;
+  color: rgba(31, 41, 51, 0.78);
 }
 
 .empty-note {

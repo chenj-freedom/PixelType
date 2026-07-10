@@ -71,3 +71,11 @@ test('free practice retry and finish do not write map progress', () => {
   assert.match(appSource, /const continueLabel = state\.currentLevel\?\.isFreePractice \? tr\('backFreePractice'\) : tr\('resultContinue'\);/);
   assert.match(appSource, /if \(state\.currentLevel\?\.isFreePractice\) \{\s*showFreePractice\(\);[\s\S]*return;[\s\S]*\}/);
 });
+
+test('adventure map explains and enforces the two-star unlock rule', () => {
+  assert.match(appSource, /const UNLOCK_REQUIRED_STARS = 2;/);
+  assert.match(appSource, /unlockHint:/);
+  assert.match(appSource, /result-unlock-note/);
+  assert.match(appSource, /function shouldUnlockNextLevel\(result\)/);
+  assert.match(appSource, /result\.passed && \(result\.stars \|\| 0\) >= UNLOCK_REQUIRED_STARS/);
+});

@@ -4,6 +4,7 @@ const PROGRESS_KEY = 'pixeltype.progress.v1';
 const CUSTOM_LEVELS_KEY = 'pixeltype.customLevels.v1';
 const LANGUAGE_KEY = 'pixeltype.language.v1';
 const AUDIO_KEY = 'pixeltype.audio.v1';
+const UNLOCK_REQUIRED_STARS = 2;
 
 export function createMemoryStorage() {
   const values = new Map();
@@ -46,7 +47,7 @@ export function saveLevelResult(storage, levelId, result, orderedLevelIds) {
   };
   const unlockedLevelIds = new Set(progress.unlockedLevelIds);
 
-  if (result.passed) {
+  if (shouldUnlockNextLevel(result)) {
     const currentIndex = orderedLevelIds.indexOf(levelId);
     const nextLevelId = orderedLevelIds[currentIndex + 1];
     if (nextLevelId) unlockedLevelIds.add(nextLevelId);
@@ -56,6 +57,10 @@ export function saveLevelResult(storage, levelId, result, orderedLevelIds) {
     levelStars,
     unlockedLevelIds: [...unlockedLevelIds],
   });
+}
+
+function shouldUnlockNextLevel(result) {
+  return result.passed && (result.stars || 0) >= UNLOCK_REQUIRED_STARS;
 }
 
 export function loadCustomLevels(storage = getBrowserStorage()) {
