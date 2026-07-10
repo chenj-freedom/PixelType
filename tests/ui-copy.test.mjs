@@ -55,8 +55,8 @@ test('completed mission results are frozen after the first settlement', () => {
 });
 
 test('free practice starts a standalone mission instead of level one', () => {
-  assert.match(indexSource, /<script src="src\/free-practice\.browser\.js\?v=keyboard-caps-state" defer><\/script>/);
-  assert.match(indexSource, /<script src="src\/app\.js\?v=keyboard-caps-state" defer><\/script>/);
+  assert.match(indexSource, /<script src="src\/free-practice\.browser\.js\?v=keyboard-caps-state-2" defer><\/script>/);
+  assert.match(indexSource, /<script src="src\/app\.js\?v=keyboard-caps-state-2" defer><\/script>/);
   assert.match(appSource, /if \(action === 'start-free'\) showFreePractice\(\);/);
   assert.match(appSource, /if \(action === 'start-free-mode'\) startFreePractice\(button\.dataset\.mode\);/);
   assert.doesNotMatch(appSource, /if \(action === 'start-free'\) startLevel\('level-1'\);/);

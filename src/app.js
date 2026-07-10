@@ -302,12 +302,13 @@
 
   document.addEventListener('keydown', (event) => {
     if (state.view !== 'mission' || !state.session) return;
-    const keyboardCaseChanged = syncKeyboardCaseFromEvent(event);
     if (isCapsLockEvent(event)) {
       event.preventDefault();
+      const keyboardCaseChanged = syncKeyboardCaseFromEvent(event, { fallbackToggle: true });
       if (keyboardCaseChanged) render();
       return;
     }
+    const keyboardCaseChanged = syncKeyboardCaseFromEvent(event);
     if (!event.ctrlKey && !event.metaKey && !event.altKey && shouldBeginPracticeFromKey(event.key, state.introStatus)) {
       event.preventDefault();
       beginPractice();
@@ -752,9 +753,13 @@
     render();
   }
 
-  function syncKeyboardCaseFromEvent(event) {
+  function syncKeyboardCaseFromEvent(event, options = {}) {
     if (!event || typeof event.getModifierState !== 'function') return false;
     const nextCase = event.getModifierState('CapsLock') ? 'upper' : 'lower';
+    if (state.keyboardCase === nextCase && options.fallbackToggle) {
+      state.keyboardCase = state.keyboardCase === 'upper' ? 'lower' : 'upper';
+      return true;
+    }
     if (state.keyboardCase === nextCase) return false;
     state.keyboardCase = nextCase;
     return true;
@@ -1140,26 +1145,26 @@
   function renderKeyboard(target, input) {
     const rawNext = target[input.length];
     const next = getKeyboardKeyName(rawNext);
-    const needsCaps = shouldHighlightCaps(rawNext);
+    const needsCaseSwitch = shouldPromptCapsSwitch(rawNext);
     const letterRows = KEYBOARD_ROWS.map((row, index) => {
       const rowClass = ['top-row', 'home-row', 'bottom-row'][index];
-      return `<div class="keyboard-row ${rowClass}">${row.map((keyConfig) => renderKeycap(keyConfig, next, needsCaps)).join('')}</div>`;
+      return `<div class="keyboard-row ${rowClass}">${row.map((keyConfig) => renderKeycap(keyConfig, next, needsCaseSwitch)).join('')}</div>`;
     }).join('');
-    const spaceRow = `<div class="keyboard-row space-row">${SPACE_KEY_ROW.map((keyConfig) => renderKeycap(keyConfig, next, needsCaps)).join('')}</div>`;
+    const spaceRow = `<div class="keyboard-row space-row">${SPACE_KEY_ROW.map((keyConfig) => renderKeycap(keyConfig, next, needsCaseSwitch)).join('')}</div>`;
     return `${letterRows}${spaceRow}`;
   }
 
-  function renderKeycap(keyConfig, next, needsCaps = false) {
+  function renderKeycap(keyConfig, next, needsCaseSwitch = false) {
     const key = typeof keyConfig === 'string' ? keyConfig : keyConfig.key;
     const column = typeof keyConfig === 'string' ? '' : `--key-column:${keyConfig.column};`;
     const span = typeof keyConfig === 'string' || !keyConfig.span ? '' : `--key-span:${keyConfig.span};`;
     const style = column || span ? ` style="${column}${span}"` : '';
     if (key === 'Case') {
-      const active = state.keyboardCase === 'upper' || needsCaps ? 'active' : '';
+      const active = needsCaseSwitch ? 'active' : '';
       const classes = ['keycap', 'case-key', active].filter(Boolean).join(' ');
       return `<button class="${classes}" data-action="toggle-keyboard-case" type="button"${style}>Caps</button>`;
     }
-    const active = key === next ? 'active' : '';
+    const active = !needsCaseSwitch && key === next ? 'active' : '';
     const isLetter = /^[A-Z]$/.test(key);
     const label = isLetter ? (state.keyboardCase === 'upper' ? key : key.toLowerCase()) : key;
     const classes = [
@@ -1176,8 +1181,14 @@
     return key?.toUpperCase();
   }
 
-  function shouldHighlightCaps(key) {
-    return isUppercaseLetter(key) && state.keyboardCase !== 'upper';
+  function shouldPromptCapsSwitch(key) {
+    if (!isLetterKey(key)) return false;
+    const targetCase = isUppercaseLetter(key) ? 'upper' : 'lower';
+    return targetCase !== state.keyboardCase;
+  }
+
+  function isLetterKey(key) {
+    return /^[a-zA-Z]$/.test(key || '');
   }
 
   function isUppercaseLetter(key) {

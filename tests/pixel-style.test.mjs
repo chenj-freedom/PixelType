@@ -786,7 +786,9 @@ test('mission keyboard renders fixed QWERTY rows with case and symbol keys', () 
   assert.match(appSource, /const SPACE_KEY_ROW = \[\{ key: 'Space', column: 8, span: 10 \}\]/);
   assert.match(appSource, /keyboardCase:\s*'lower'/);
   assert.match(appSource, /syncKeyboardCaseFromEvent\(event\)/);
+  assert.match(appSource, /syncKeyboardCaseFromEvent\(event, \{ fallbackToggle: true \}\)/);
   assert.match(appSource, /event\.getModifierState\('CapsLock'\)/);
+  assert.match(appSource, /state\.keyboardCase === nextCase && options\.fallbackToggle/);
   assert.match(appSource, /if \(isCapsLockEvent\(event\)\)/);
   assert.match(appSource, /function isCapsLockEvent\(event\)/);
   assert.match(appSource, /event\?\.key === 'CapsLock' \|\| event\?\.code === 'CapsLock'/);
@@ -810,9 +812,13 @@ test('mission keyboard renders fixed QWERTY rows with case and symbol keys', () 
   assert.match(appSource, />Caps<\/button>/);
   assert.doesNotMatch(appSource, /CapsLk/);
   assert.doesNotMatch(appSource, /state\.keyboardCase === 'upper' \? 'abc' : 'ABC'/);
-  assert.match(appSource, /state\.keyboardCase === 'upper' \|\| needsCaps/);
-  assert.match(appSource, /function shouldHighlightCaps\(key\)/);
-  assert.match(appSource, /isUppercaseLetter\(key\) && state\.keyboardCase !== 'upper'/);
+  assert.doesNotMatch(appSource, /state\.keyboardCase === 'upper' \|\| needsCaps/);
+  assert.match(appSource, /const active = needsCaseSwitch \? 'active' : ''/);
+  assert.match(appSource, /const active = !needsCaseSwitch && key === next \? 'active' : ''/);
+  assert.match(appSource, /function shouldPromptCapsSwitch\(key\)/);
+  assert.match(appSource, /const targetCase = isUppercaseLetter\(key\) \? 'upper' : 'lower'/);
+  assert.match(appSource, /return targetCase !== state\.keyboardCase/);
+  assert.match(appSource, /function isLetterKey\(key\)/);
   assert.match(appSource, /state\.keyboardCase === 'upper' \? key : key\.toLowerCase\(\)/);
   assert.match(appSource, /key === 'Space'/);
   assert.match(appSource, /key === 'Case'/);
