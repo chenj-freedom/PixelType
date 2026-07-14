@@ -968,6 +968,27 @@ test('home screen has a mobile layout override', () => {
   assert.match(styleSource, /@media \(max-width: 560px\)[\s\S]*\.home-title-stack/);
 });
 
+test('top toolbar keeps the final language tooltip inside the screen boundary', () => {
+  const tooltipRule = styleSource.match(
+    /\.toolbar\.icon-toolbar \.sprite-icon-btn:last-child \.sprite-tooltip\s*\{([^}]*)\}/,
+  )?.[1] ?? '';
+  const arrowRule = styleSource.match(
+    /\.toolbar\.icon-toolbar \.sprite-icon-btn:last-child \.sprite-tooltip::after\s*\{([^}]*)\}/,
+  )?.[1] ?? '';
+
+  assert.match(tooltipRule, /left:\s*auto/);
+  assert.match(tooltipRule, /right:\s*0/);
+  assert.match(tooltipRule, /transform:\s*translateY\(4px\)/);
+  assert.match(
+    styleSource,
+    /\.toolbar\.icon-toolbar \.sprite-icon-btn:last-child:hover \.sprite-tooltip,[\s\S]*?\.toolbar\.icon-toolbar \.sprite-icon-btn:last-child:focus-visible \.sprite-tooltip\s*\{[^}]*transform:\s*translateY\(0\)/,
+  );
+  assert.match(arrowRule, /left:\s*auto/);
+  assert.match(arrowRule, /right:\s*22px/);
+  assert.match(arrowRule, /transform:\s*rotate\(45deg\)/);
+  assert.match(styleSource, /\.screen\s*\{[^}]*overflow:\s*hidden/);
+});
+
 test('level map is presented as a connected adventure path', () => {
   assert.match(appSource, /map-board/);
   assert.match(appSource, /adventure-path/);

@@ -9,6 +9,10 @@ const storageSource = readFileSync(new URL('../src/storage.js', import.meta.url)
 const levelsSource = readFileSync(new URL('../src/levels.js', import.meta.url), 'utf8');
 const i18nSource = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 const styleSource = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+const feedbackAudioEngineSource = readFileSync(
+  new URL('../src/feedback-audio-engine.browser.js', import.meta.url),
+  'utf8',
+);
 
 test('home and mission templates use language keys for localized UI copy', () => {
   assert.match(appSource, /tr\('homeIntro'\)/);
@@ -84,6 +88,17 @@ test('countdown explosion animation only renders on the timeout transition', () 
   assert.doesNotMatch(appSource, /session\.status === 'ended' \? 'has-exploded' : ''/);
 });
 
+test('mission key feedback uses isolated louder gains without changing other modes', () => {
+  assert.match(feedbackAudioEngineSource, /correct:\s*{[^}]*gain:\s*0\.06/);
+  assert.match(feedbackAudioEngineSource, /'mission-correct':\s*{[^}]*gain:\s*0\.10/);
+  assert.match(feedbackAudioEngineSource, /'mission-error':\s*{[^}]*gain:\s*0\.08/);
+  assert.match(feedbackAudioEngineSource, /error:\s*{[^}]*gain:\s*0\.045/);
+  assert.match(feedbackAudioEngineSource, /'rain-hit':\s*{[^}]*gain:\s*0\.045/);
+  assert.match(appSource, /state\.session\.feedback === 'error'[\s\S]*playFeedbackSound\('mission-error'\)/);
+  assert.match(appSource, /state\.session\.feedback === 'correct'[\s\S]*playFeedbackSound\('mission-correct'\)/);
+  assert.match(appSource, /state\.rainSession\.cleared > clearedBefore \? 'rain-hit' : 'error'/);
+});
+
 test('letter rain starts one continuous audio engine and reuses its landing buffer', () => {
   assert.match(indexSource, /<script src="src\/rain-audio-engine\.browser\.js\?v=rain-engine-4" defer><\/script>/);
   assert.ok(indexSource.indexOf('rain-audio-engine.browser.js') < indexSource.indexOf('app.js'));
@@ -138,7 +153,7 @@ test('completed mission results are frozen after the first settlement', () => {
 
 test('free practice starts a standalone mission instead of level one', () => {
   assert.match(indexSource, /<script src="src\/free-practice\.browser\.js\?v=keyboard-caps-state-2" defer><\/script>/);
-  assert.match(indexSource, /<script src="src\/app\.js\?v=bomb-experience-1" defer><\/script>/);
+  assert.match(indexSource, /<script src="src\/app\.js\?v=audible-prime-1" defer><\/script>/);
   assert.match(appSource, /if \(action === 'start-free'\) showFreePractice\(\);/);
   assert.match(appSource, /if \(action === 'start-free-mode'\) startFreePractice\(button\.dataset\.mode\);/);
   assert.doesNotMatch(appSource, /if \(action === 'start-free'\) startLevel\('level-1'\);/);

@@ -13,6 +13,7 @@
   } = window.PixelTypeGameModes;
   const { createRainAudioEngine } = window.PixelTypeRainAudioEngine;
   const { createBombAudioEngine } = window.PixelTypeBombAudioEngine;
+  const { createFeedbackAudioEngine } = window.PixelTypeFeedbackAudioEngine;
   const UNLOCK_REQUIRED_STARS = 2;
 
   const BUILT_IN_LEVELS = [
@@ -306,6 +307,7 @@
 
   const rainAudioEngine = createRainAudioEngine();
   const bombAudioEngine = createBombAudioEngine();
+  const feedbackAudioEngine = createFeedbackAudioEngine();
 
   const state = {
     view: 'home',
@@ -1011,9 +1013,11 @@
     state.audioEnabled = !state.audioEnabled;
     localStorage.setItem(STORAGE_KEYS.audio, String(state.audioEnabled));
     if (state.audioEnabled) {
+      feedbackAudioEngine.start();
       if (state.view === 'letter-rain' && state.rainSession?.status === 'playing') rainAudioEngine.start();
       if (state.view === 'countdown-defuse' && state.bombSession?.status === 'playing') bombAudioEngine.start();
     } else {
+      feedbackAudioEngine.stop();
       rainAudioEngine.stop();
       bombAudioEngine.stop();
     }
@@ -1101,8 +1105,19 @@
     return typeof event.key === 'string' && event.key.length === 1;
   }
 
-  function beginPractice() {
+  async function beginPractice() {
     if (state.view !== 'mission' || state.introStatus !== 'ready') return;
+    const levelAtStart = state.currentLevel;
+    state.introStatus = 'starting';
+    render();
+
+    if (state.audioEnabled) await feedbackAudioEngine.prime('mission-correct', 0.04);
+    if (
+      state.view !== 'mission'
+      || state.introStatus !== 'starting'
+      || state.currentLevel !== levelAtStart
+    ) return;
+
     state.introStatus = 'playing';
     state.session = {
       ...state.session,
@@ -1135,9 +1150,9 @@
       return;
     }
     if (state.session.feedback === 'error') {
-      playFeedbackSound('error');
+      playFeedbackSound('mission-error');
     } else if (state.session.feedback === 'correct' || state.session.feedback === 'target-complete') {
-      playFeedbackSound('correct');
+      playFeedbackSound('mission-correct');
     }
     if (state.session.feedback === 'error' && previousFeedback !== 'error') {
       speak(tr('errorHint'), state.language);
@@ -1256,13 +1271,14 @@
 
   function renderIntroOverlay() {
     const isSpeaking = state.introStatus === 'speaking';
+    const isStarting = state.introStatus === 'starting';
     return `
       <div class="intro-overlay">
         <div class="intro-card">
           <img class="intro-guide-icon" src="assets/sprites/home-brand-icon.png" alt="">
           <h3>${isSpeaking ? tr('introListening') : tr('introReady')}</h3>
           <p>${escapeHtml(state.introText)}</p>
-          <button class="pixel-btn primary" data-action="begin-practice" ${isSpeaking ? 'disabled' : ''}>${tr('beginPractice')}</button>
+          <button class="pixel-btn primary" data-action="begin-practice" ${isSpeaking || isStarting ? 'disabled' : ''}>${tr('beginPractice')}</button>
         </div>
       </div>
     `;
@@ -1284,10 +1300,11 @@
     }
 
     window.speechSynthesis.cancel();
+    const resolvedLanguage = language || state.language;
     const utterance = new SpeechSynthesisUtterance(text);
     let completed = false;
     let fallbackTimer = null;
-    const introStartedAt = Date.now();
+    let introStartedAt = 0;
     const fallbackMinimumMs = getIntroFallbackMinimumMs(text);
 
     function done() {
@@ -1311,12 +1328,21 @@
       fallbackTimer = window.setTimeout(checkFallback, 400);
     }
 
-    utterance.lang = language || state.language;
+    utterance.lang = resolvedLanguage;
     utterance.rate = 0.92;
     utterance.onend = done;
     utterance.onerror = done;
-    window.speechSynthesis.speak(utterance);
-    fallbackTimer = window.setTimeout(checkFallback, 1200);
+    window.setTimeout(() => {
+      const canStartIntro = state.audioEnabled
+        && state.view === 'mission'
+        && state.introStatus === 'speaking'
+        && introToken === state.introToken;
+      if (!canStartIntro) return;
+
+      introStartedAt = Date.now();
+      window.speechSynthesis.speak(utterance);
+      fallbackTimer = window.setTimeout(checkFallback, 1200);
+    }, 120);
   }
 
   function completeIntro(introToken) {
@@ -1330,61 +1356,12 @@
     rainAudioEngine.playLanding();
   }
 
-  function playFeedbackSound(kind) {
+  async function playFeedbackSound(kind) {
     if (!state.audioEnabled) return;
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    const config = getFeedbackSound(kind);
-    const audioContext = getAudioContext(AudioContextClass);
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    const now = audioContext.currentTime;
-
-    oscillator.type = config.type;
-    oscillator.frequency.setValueAtTime(config.frequency, now);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(config.gain, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + config.duration);
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-    oscillator.start(now);
-    oscillator.stop(now + config.duration + 0.01);
-  }
-
-  function getAudioContext(AudioContextClass) {
-    if (!state.audioContext) {
-      state.audioContext = new AudioContextClass();
-    }
-    if (state.audioContext.state === 'suspended') {
-      state.audioContext.resume();
-    }
-    return state.audioContext;
-  }
-
-  function getFeedbackSound(kind) {
-    const sounds = {
-      correct: {
-        type: 'sine',
-        frequency: 660,
-        duration: 0.055,
-        gain: 0.05,
-      },
-      error: {
-        type: 'square',
-        frequency: 180,
-        duration: 0.09,
-        gain: 0.045,
-      },
-      'rain-hit': {
-        type: 'triangle',
-        frequency: 880,
-        duration: 0.08,
-        gain: 0.045,
-      },
-    };
-    return sounds[kind] || sounds.correct;
+    if (feedbackAudioEngine.play(kind)) return;
+    const started = await feedbackAudioEngine.start();
+    if (!started || !state.audioEnabled) return;
+    feedbackAudioEngine.play(kind);
   }
 
   function canAcceptMissionInput(introStatus) {

@@ -438,6 +438,23 @@ body.home-art-active .app-shell {
   transform: translate(-50%, 0);
 }
 
+.toolbar.icon-toolbar .sprite-icon-btn:last-child .sprite-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(4px);
+}
+
+.toolbar.icon-toolbar .sprite-icon-btn:last-child:hover .sprite-tooltip,
+.toolbar.icon-toolbar .sprite-icon-btn:last-child:focus-visible .sprite-tooltip {
+  transform: translateY(0);
+}
+
+.toolbar.icon-toolbar .sprite-icon-btn:last-child .sprite-tooltip::after {
+  left: auto;
+  right: 22px;
+  transform: rotate(45deg);
+}
+
 .home-sprite {
   display: block;
   width: 100%;

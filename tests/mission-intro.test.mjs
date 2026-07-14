@@ -36,6 +36,15 @@ test('starts practice from keyboard only after the introduction is ready', () =>
   assert.equal(shouldBeginPracticeFromKey('Enter', 'playing'), false);
 });
 
+test('starting mission practice waits for an audible feedback prime before typing begins', () => {
+  assert.match(
+    appSource,
+    /async function beginPractice\(\) \{[\s\S]*state\.introStatus = 'starting';[\s\S]*await feedbackAudioEngine\.prime\('mission-correct', 0\.04\);[\s\S]*state\.introStatus = 'playing'/,
+  );
+  assert.match(appSource, /await feedbackAudioEngine\.prime\('mission-correct', 0\.04\);[\s\S]*state\.currentLevel !== levelAtStart/);
+  assert.match(appSource, /const isStarting = state\.introStatus === 'starting';[\s\S]*isSpeaking \|\| isStarting \? 'disabled' : ''/);
+});
+
 test('mission keydown starts ready intro with Enter or Space before typing input is accepted', () => {
   assert.match(appSource, /document\.addEventListener\('keydown', \(event\) => {[\s\S]*shouldBeginPracticeFromKey\(event\.key, state\.introStatus\)[\s\S]*beginPractice\(\);[\s\S]*if \(!canAcceptMissionInput\(state\.introStatus\)\) return;/);
 });
