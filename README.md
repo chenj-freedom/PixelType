@@ -1,157 +1,180 @@
-# PixelType
+<p align="center">
+  <img src="assets/sprites/home-brand-icon.png" width="96" alt="PixelType Logo">
+</p>
 
-PixelType 是一款面向小学三年级孩子的本地网页打字游戏。它默认使用中文界面，通过像素卡通闯关地图，引导孩子逐步学习英文键盘打字。
+<h1 align="center">PixelType</h1>
 
-项目使用本地静态网页实现。直接双击 `index.html` 就能在浏览器中运行。
+<p align="center">一款面向小学生的本地网页打字游戏</p>
 
-## 当前版本
+<p align="center">
+  <strong>简体中文</strong> · <a href="README.en.md">English</a>
+</p>
 
-当前 MVP 已包含：
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-F5C451?style=for-the-badge" alt="Version 0.1.0">
+  <img src="https://img.shields.io/badge/platform-browser-45A7E6?style=for-the-badge" alt="Platform: Browser">
+  <img src="https://img.shields.io/badge/runtime-local-54C98D?style=for-the-badge" alt="Runtime: Local">
+  <img src="https://img.shields.io/badge/languages-ZH%20%7C%20EN-F37F8B?style=for-the-badge" alt="Languages: Chinese and English">
+  <img src="https://img.shields.io/badge/license-not%20specified-9E9E9E?style=for-the-badge" alt="License: Not specified">
+</p>
 
-- 中文优先界面，支持切换英文界面
-- 像素卡通风格首页、闯关地图、自由练习和游戏模式
-- 按学习顺序逐步解锁的内置关卡地图
-- 8 个内置打字关卡
-- 主线“引导目标”玩法：一次突出一个字母、单词或短句
-- 每关开始前先听/读 NPC 关卡介绍，介绍结束后才能开始输入
-- 正确/错误反馈、准确率、速度和星级结算
-- 字母雨滴：按键消除下落字母，漏掉 5 滴后结束并统计坚持时长
-- 倒计时拆弹：在倒计时结束前准确输入完整英文句子
-- 通关进度、语言和声音设置保存在浏览器本地
-- NPC 文字提示和浏览器语音朗读
-- 按键音效反馈：打对和打错会播放不同的短音效
-- 一个“声音开/关”按钮同时控制 NPC 语音和按键音效
+<p align="center">
+  <img src="assets/reference/home-reference-b.png" alt="PixelType 游戏首页">
+</p>
 
-## 怎么运行
+PixelType 通过像素卡通闯关地图、自由练习和趣味小游戏，引导小学生循序渐进地练习英文键盘输入。游戏默认使用中文界面，也可以随时切换为英文；不需要账号、后端服务或网络连接，学习进度保存在当前浏览器中。
 
-打开这个文件：
+## 使用手册
 
-```text
-index.html
-```
+### 运行要求
 
-在 Windows 上可以直接双击打开。推荐使用 Chrome 或 Edge。
+- 一台带有实体键盘的电脑。
+- 推荐使用最新版 Chrome 或 Edge。
+- 运行游戏不需要安装 Node.js，也不需要连接互联网。
 
-如果浏览器语音不可用，游戏仍然可以正常玩，只是 NPC 不会朗读，文字气泡仍会显示。
+### 如何运行
 
-## 怎么测试
+1. 下载并解压项目文件，或者将仓库克隆到本地。
+2. 打开项目根目录。
+3. 双击 `index.html`，游戏会在默认浏览器中启动。
 
-如果本机安装了 Node.js，可以运行逻辑测试：
+如果浏览器没有可用的系统语音，游戏仍然可以正常使用，只是向导不会朗读提示文字。
 
-```bash
-npm.cmd test
-```
+### 当前版本玩法
 
-测试覆盖：
+#### 闯关地图
 
-- 打字目标推进
-- 错误输入记录
-- 准确率、速度和星级计算
-- 通关进度保存
-- 下一关解锁
-- 字母雨滴速度、命中与失败条件
-- 拆弹倒计时、逐字输入和轮次推进
+闯关地图包含 8 个循序渐进的关卡，从 `F`、`J` 食指定位开始，逐步练习中排、上排、下排、英文单词和简单句子。
 
-## 游戏玩法
+- 进入关卡后，先阅读或收听向导提示。
+- 根据屏幕目标使用实体键盘输入。
+- 正确字符会获得即时反馈，错误输入会被记录并提示。
+- 完成关卡后根据准确率和速度获得星星，并解锁下一关。
 
-孩子从“闯关地图”进入关卡。每个关卡对应一个学习阶段，例如：
+#### 自由练习
 
-1. `F` / `J` 食指定位
-2. 左手中排 `A S D F`
-3. 右手中排 `J K L`
-4. 中排组合单词
-5. 上排字母
-6. 下排字母
-7. 动物单词
-8. 简单短句
+自由练习不会影响闯关地图的星级和解锁进度，可以选择：
 
-每关进入后，屏幕会显示当前目标。孩子用真实键盘输入：
+- 字母练习
+- 单词练习
+- 句子练习
+- 混合练习
 
-- 按对的字符会变绿
-- 按错会温和提示
-- 完成一组目标后根据准确率和速度获得星星
-- 达标后地图解锁下一关
+#### 字母雨滴
 
-## 游戏模式
+选择低速或高速后，字母会随雨滴落下。按下对应字母即可消除雨滴；漏掉 5 滴后游戏结束，并显示坚持时间和消除数量。
 
-首页的“游戏模式”包含两个独立小游戏，不影响闯关地图的星级和解锁进度：
+#### 倒计时拆弹
 
-- `字母雨滴`：支持低速和高速。每滴雨的速度带有随机变化，输入对应字母即可消除；第 5 滴落到动物地板时结束。
-- `倒计时拆弹`：目标为完整英文句子，大小写、空格和标点都需要准确输入；完成一句后进入时间更紧的下一轮。
+在炸弹倒计时结束前输入完整英文句子。大小写、空格和标点都需要正确；成功完成一句后会进入下一轮，倒计时会根据句子长度调整。
 
-## 语音原理
+### 通用操作
 
-NPC 语音使用浏览器内置的 Web Speech API：
+- 首页右上角的声音按钮控制向导语音、按键音效和游戏背景音。
+- 语言按钮可以在中文和英文界面之间切换。
+- 闯关进度、语言和声音设置会自动保存在当前浏览器中。
+- 清除该网站的浏览器本地数据会同时清除已保存的游戏进度。
 
-```js
-window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
-```
+## 开发手册
 
-它不是预录音频，也不调用联网 AI 语音。声音质量取决于当前电脑和浏览器支持的系统语音。
+### 技术栈
 
-## 按键音效原理
+- HTML5
+- CSS3、Grid、Flexbox、响应式布局和 CSS 动画
+- 原生 JavaScript
+- Web Audio API、Web Speech API、Local Storage 和 `requestAnimationFrame`
+- Node.js ES Module 开发脚本
+- Node.js 内置测试框架 `node:test`
 
-打字反馈音效使用浏览器内置的 Web Audio API 合成：
+项目运行时没有第三方依赖，也没有使用前端框架、打包工具、后端服务或数据库。
 
-```js
-const oscillator = audioContext.createOscillator();
-const gain = audioContext.createGain();
-```
-
-打对时播放一个短促、偏明亮的提示音；打错时播放一个更低、更明显的错误提示音。项目没有引入 mp3 或 wav 文件，音效在本地浏览器中实时生成。
-
-## 目录结构
+### 目录结构
 
 ```text
-.
-├── index.html
-├── styles.css
-├── package.json
-├── src
-│   ├── app.js
+PixelType/
+├── assets/
+│   ├── reference/                  # README 和视觉参考图片
+│   └── sprites/                    # 游戏使用的像素精灵图
+│       └── font/                   # A-Z / a-z 像素字母
+├── scripts/
+│   ├── generate-font-sprites.mjs   # 生成像素字母资源
+│   ├── generate-home-sprites.mjs   # 生成首页和游戏精灵资源
+│   └── optimize-png-assets.mjs     # 优化 PNG 文件
+├── src/
+│   ├── app.js                      # 页面渲染、状态和主流程
+│   ├── bomb-audio-engine.browser.js
+│   ├── feedback-audio-engine.browser.js
 │   ├── free-practice.browser.js
+│   ├── free-practice.js
 │   ├── game-modes.browser.js
 │   ├── i18n.js
 │   ├── levels.js
+│   ├── mission-intro.js
+│   ├── rain-audio-engine.browser.js
 │   ├── storage.js
 │   └── typing-engine.js
-├── tests
-│   ├── storage.test.mjs
-│   ├── game-modes.test.mjs
-│   └── typing-engine.test.mjs
-└── docs
-    └── superpowers
-        ├── plans
-        └── specs
+├── tests/                          # Node.js 自动化测试
+├── font-review.html                # 像素字体检查页面
+├── index.html                      # 游戏入口
+├── package.json                    # 项目信息和开发命令
+├── styles.css                      # 全局界面和动画样式
+├── README.md                       # 默认中文说明
+└── README.en.md                    # 英文说明
 ```
 
-## 主要文件说明
+### 文件说明
 
-- `index.html`：本地网页入口
-- `styles.css`：像素卡通视觉样式
-- `src/app.js`：浏览器端游戏主逻辑和页面渲染
-- `src/levels.js`：内置关卡数据
-- `src/i18n.js`：中文/英文界面文案
-- `src/storage.js`：本地进度、语言和声音设置存储
-- `src/free-practice.browser.js`：随机字母、单词、句子练习池和任务生成
-- `src/game-modes.browser.js`：字母雨滴和倒计时拆弹的游戏状态引擎
-- `src/typing-engine.js`：可测试的打字核心逻辑
-- `tests/`：Node.js 自动化测试
+#### 页面与数据
 
-## 后续可以继续做
+| 文件 | 说明 |
+| --- | --- |
+| `index.html` | 加载样式和浏览器端脚本的静态入口。 |
+| `styles.css` | 首页、关卡、自由练习、小游戏、像素动画和响应式样式。 |
+| `src/app.js` | 负责页面渲染、全局状态、键盘事件和各模式切换。 |
+| `src/levels.js` | 8 个闯关关卡的目标、提示和评分配置。 |
+| `src/i18n.js` | 中文和英文界面文本。 |
+| `src/storage.js` | 浏览器本地进度及偏好设置的读写。 |
+| `src/mission-intro.js` | 关卡向导介绍、语音状态和输入开放时机。 |
 
-- 增加更多像素角色表情和地图动画
-- 增加掉落单词、救援任务等复习玩法
-- 增加更细的手指提示和键盘区域高亮
-- 增加音效和可关闭的背景音乐
-- 增加英文 NPC 台词的完整润色
+#### 打字与游戏模式
 
-## Sprite 资源说明
+| 文件 | 说明 |
+| --- | --- |
+| `src/typing-engine.js` | 闯关模式的输入判定、统计和结算逻辑。 |
+| `src/free-practice.js` | 可测试的自由练习任务生成逻辑。 |
+| `src/free-practice.browser.js` | 浏览器运行使用的自由练习模式数据和接口。 |
+| `src/game-modes.browser.js` | 字母雨滴和倒计时拆弹的浏览器端状态引擎。 |
 
-首页由小型 sprite 资源组合渲染，包括按钮、图标、机器人、气泡、地图和像素字母资源。
+#### 音频
 
-- `assets/sprites/` 存放按钮、图标、机器人、气泡、首页地图和小游戏 PNG 资源。
-- 雨滴使用一张透明像素 sprite 作为外壳，程序在中央叠加随机字母。
-- `PixelType` 标题由程序按文字拼接 `assets/sprites/font/` 里的大小写字母 sprite。
-- 字母 sprite 包含英文大写和小写字母，后续需要改标题或做英文像素文字时可以复用同一套图片资源。
-- 字体和首页 UI sprite 可通过 `npm run generate:sprites` 重新生成。
+| 文件 | 说明 |
+| --- | --- |
+| `src/feedback-audio-engine.browser.js` | 正确、错误及普通按键反馈音。 |
+| `src/rain-audio-engine.browser.js` | 字母雨滴背景声和落地声。 |
+| `src/bomb-audio-engine.browser.js` | 拆弹背景音乐和爆炸音效。 |
+
+#### 资源与测试
+
+| 路径 | 说明 |
+| --- | --- |
+| `assets/sprites/` | 首页、角色、按钮、图标、雨滴、炸弹和像素字体资源。 |
+| `assets/reference/` | 项目展示及视觉参考图片。 |
+| `scripts/` | 精灵图生成和 PNG 优化脚本，仅在开发时使用。 |
+| `tests/` | 打字逻辑、存储、界面文案、音频引擎和资源检查测试。 |
+
+### 开发命令
+
+运行游戏本身不需要 Node.js。只有生成资源、优化图片或运行测试时才需要安装 Node.js。
+
+```bash
+# 运行全部自动化测试
+npm test
+
+# 重新生成字体和首页精灵图
+npm run generate:sprites
+
+# 优化 PNG 资源
+npm run optimize:assets
+```
+
+仓库当前没有声明开源许可证。需要开放复用或分发权限时，应先由项目所有者选择并添加合适的 `LICENSE` 文件。
