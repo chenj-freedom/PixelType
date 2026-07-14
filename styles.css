@@ -1280,11 +1280,15 @@ body.home-art-active .app-shell {
   box-shadow: -88px -18px 0 #ffd23f, -34px 70px 0 #fff8df, 18px -78px 0 #ffd23f, 84px -12px 0 #fff8df, 42px 72px 0 #ffd23f;
 }
 
-.bomb-arena.has-exploded {
+.bomb-arena.is-ended .bomb-timer {
+  opacity: 0;
+}
+
+.bomb-arena.is-exploding {
   animation: bomb-arena-shake 650ms steps(2, end) both;
 }
 
-.bomb-arena.has-exploded .bomb-timer {
+.bomb-arena.is-exploding .bomb-timer {
   animation: bomb-vanish 380ms steps(4, end) both;
 }
 
@@ -1363,12 +1367,12 @@ body.home-art-active .app-shell {
     animation: none;
   }
 
-  .bomb-arena.has-exploded,
-  .bomb-arena.has-exploded .bomb-timer {
+  .bomb-arena.is-exploding,
+  .bomb-arena.is-exploding .bomb-timer {
     animation: none;
   }
 
-  .bomb-arena.has-exploded .bomb-timer {
+  .bomb-arena.is-ended .bomb-timer {
     opacity: 0;
   }
 

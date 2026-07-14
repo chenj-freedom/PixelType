@@ -54,7 +54,7 @@ test('countdown defuse is wired to exact sentence typing and countdown UI', () =
   assert.match(appSource, /advanceBombSession/);
   assert.match(appSource, /typeBombKey/);
   assert.match(appSource, /data-action="start-countdown-defuse"/);
-  assert.match(appSource, /function renderCountdownDefuse\(\)/);
+  assert.match(appSource, /function renderCountdownDefuse\(\{ animateExplosion = false \} = \{\}\)/);
   assert.match(appSource, /function handleCountdownDefuseKey\(event\)/);
   assert.match(appSource, /FREE_PRACTICE_POOLS\.sentences/);
   assert.match(appSource, /assets\/sprites\/game-bomb\.png/);
@@ -69,6 +69,19 @@ test('countdown defuse owns one continuous audio engine and one explosion cue', 
   assert.match(appSource, /function startCountdownDefuse\(\)[\s\S]*bombAudioEngine\.start\(\)/);
   assert.match(appSource, /state\.bombSession\.status === 'ended'[\s\S]*bombAudioEngine\.playExplosion\(\)/);
   assert.match(appSource, /function stopGameLoop\(\)[\s\S]*bombAudioEngine\.stop\(\)/);
+});
+
+test('countdown explosion animation only renders on the timeout transition', () => {
+  assert.match(appSource, /function renderCountdownDefuse\(\{ animateExplosion = false \} = \{\}\)/);
+  assert.match(appSource, /session\.status === 'ended' \? 'is-ended' : ''/);
+  assert.match(appSource, /animateExplosion \? 'is-exploding' : ''/);
+  assert.match(appSource, /animateExplosion \? `[\s\S]*class="bomb-explosion"/);
+  assert.match(
+    appSource,
+    /state\.bombSession\.status === 'ended'[\s\S]*renderCountdownDefuse\(\{ animateExplosion: true \}\)/,
+  );
+  assert.equal((appSource.match(/animateExplosion:\s*true/g) || []).length, 1);
+  assert.doesNotMatch(appSource, /session\.status === 'ended' \? 'has-exploded' : ''/);
 });
 
 test('letter rain starts one continuous audio engine and reuses its landing buffer', () => {

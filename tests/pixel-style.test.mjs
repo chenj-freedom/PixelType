@@ -223,7 +223,10 @@ test('countdown defuse keeps the bomb compact and renders a pixel explosion', ()
   assert.match(styleSource, /@media \(max-width: 860px\)[\s\S]*\.bomb-timer\s*\{[^}]*width:\s*min\(145px, 100%\)/);
   assert.match(appSource, /function formatCountdownValue\(remainingMs\)/);
   assert.match(appSource, /if \(clock\) clock\.textContent = remainingValue/);
-  assert.match(appSource, /session\.status === 'ended' \? 'has-exploded' : ''/);
+  assert.match(appSource, /session\.status === 'ended' \? 'is-ended' : ''/);
+  assert.match(appSource, /animateExplosion \? 'is-exploding' : ''/);
+  assert.match(styleSource, /\.bomb-arena\.is-ended \.bomb-timer\s*{[^}]*opacity:\s*0/);
+  assert.match(styleSource, /\.bomb-arena\.is-exploding\s*{[^}]*animation:\s*bomb-arena-shake/);
   assert.match(appSource, /class="bomb-explosion"/);
   assert.match(appSource, /class="bomb-explosion-core"/);
   assert.match(appSource, /class="bomb-explosion-ring"/);
@@ -259,7 +262,7 @@ test('countdown defuse keeps the bomb compact and renders a pixel explosion', ()
   assert.match(explosionDebrisStyle, /animation:\s*bomb-explosion-debris 700ms ease-out both/);
   assert.match(styleSource, /\.bomb-explosion-debris::before[\s\S]*width:\s*6px/);
   assert.match(styleSource, /\.bomb-explosion-debris::after[\s\S]*width:\s*4px/);
-  assert.match(styleSource, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.bomb-arena\.has-exploded/);
+  assert.match(styleSource, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.bomb-arena\.is-exploding/);
 });
 
 test('home layout uses the compact B-reference proportions', () => {

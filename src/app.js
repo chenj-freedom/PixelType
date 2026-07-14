@@ -630,7 +630,7 @@
     `).join('');
   }
 
-  function renderCountdownDefuse() {
+  function renderCountdownDefuse({ animateExplosion = false } = {}) {
     const session = state.bombSession;
     if (!session) {
       showGameModes();
@@ -649,13 +649,13 @@
           <div class="stat-box"><span>${tr('typingErrors')}</span><strong id="bomb-errors">${session.errors}</strong></div>
           <div class="stat-box"><span>${tr('progress')}</span><strong id="bomb-round">${session.round}</strong></div>
         </div>
-        <section class="bomb-arena ${session.feedback === 'error' ? 'has-error' : ''} ${session.status === 'ended' ? 'has-exploded' : ''}" aria-label="${tr('countdownDefuse')}">
+        <section class="bomb-arena ${session.feedback === 'error' ? 'has-error' : ''} ${session.status === 'ended' ? 'is-ended' : ''} ${animateExplosion ? 'is-exploding' : ''}" aria-label="${tr('countdownDefuse')}">
           <div class="bomb-timer" aria-hidden="true">
             <img src="assets/sprites/game-bomb.png" alt="">
             <span id="bomb-clock">${formatCountdownValue(remainingMs)}</span>
           </div>
           <div id="bomb-sentence" class="bomb-sentence-progress">${renderBombSentence(session.sentence, session.input)}</div>
-          ${session.status === 'ended' ? `
+          ${animateExplosion ? `
             <div class="bomb-explosion" aria-hidden="true">
               <span class="bomb-explosion-core"></span>
               <span class="bomb-explosion-ring"></span>
@@ -937,7 +937,7 @@
       state.bombSession = advanceBombSession(state.bombSession, now);
       if (state.bombSession.status === 'ended') {
         if (state.audioEnabled) bombAudioEngine.playExplosion();
-        renderCountdownDefuse();
+        renderCountdownDefuse({ animateExplosion: true });
         return;
       }
       updateCountdownDefuseScene(now);
