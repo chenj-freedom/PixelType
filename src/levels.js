@@ -81,47 +81,6 @@ export const BUILT_IN_LEVELS = [
   },
 ];
 
-export function getAllLevels(customLevels = []) {
-  return [...BUILT_IN_LEVELS, ...customLevels.map((level, index) => ({
-    ...level,
-    order: BUILT_IN_LEVELS.length + index + 1,
-    isCustom: true,
-  }))];
-}
-
-export function normalizeCustomLevel(input) {
-  const title = String(input.title || '').trim() || '自定义关卡';
-  const targets = normalizeTargets(input.targets);
-  return {
-    id: input.id || `custom-${Date.now()}`,
-    title,
-    subtitle: input.subtitle || '自定义练习',
-    focusKeys: input.focusKeys || inferFocusKeys(targets),
-    targets,
-    targetAccuracy: Number(input.targetAccuracy || 85),
-    difficulty: input.difficulty || 'normal',
-    npcLanguage: input.npcLanguage || 'zh-CN',
-    npcLine: input.npcLine || '看准目标，一个字母一个字母输入。',
-    isCustom: true,
-  };
-}
-
-function normalizeTargets(value) {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item).trim()).filter(Boolean);
-  }
-  return String(value || '')
-    .split(/[\n,，]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function inferFocusKeys(targets) {
-  const keys = new Set();
-  for (const target of targets) {
-    for (const char of target.toUpperCase()) {
-      if (/[A-Z]/.test(char)) keys.add(char);
-    }
-  }
-  return [...keys].slice(0, 12);
+export function getAllLevels() {
+  return [...BUILT_IN_LEVELS];
 }

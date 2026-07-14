@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 
 const appSource = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
@@ -17,7 +17,7 @@ test('home screen is assembled from sprite assets and a pixel font atlas', () =>
   assert.match(appSource, /renderPixelWord\(tr\('appTitle'\), 'home'\)/);
   assert.match(appSource, /assets\/sprites\/button-adventure\.png/);
   assert.match(appSource, /assets\/sprites\/button-practice\.png/);
-  assert.match(appSource, /assets\/sprites\/button-editor\.png/);
+  assert.match(appSource, /assets\/sprites\/button-games\.png/);
   assert.match(appSource, /assets\/sprites\/home-brand-icon\.png/);
   assert.match(appSource, /assets\/sprites\/robot-guide\.png/);
   assert.match(appSource, /assets\/sprites\/home-map\.png/);
@@ -46,7 +46,10 @@ test('home screen is assembled from sprite assets and a pixel font atlas', () =>
   [
     '../assets/sprites/button-adventure.png',
     '../assets/sprites/button-practice.png',
-    '../assets/sprites/button-editor.png',
+    '../assets/sprites/button-games.png',
+    '../assets/sprites/game-animal-floor.png',
+    '../assets/sprites/game-bomb.png',
+    '../assets/sprites/game-raindrop.png',
     '../assets/sprites/home-brand-icon.png',
     '../assets/sprites/robot-guide.png',
     '../assets/sprites/home-map.png',
@@ -73,6 +76,10 @@ test('home sprite assets are extracted from the B reference into reusable parts'
   assert.match(homeSpriteScript, /transparentEdgeBackground/);
   assert.match(homeSpriteScript, /eraseHomeMapButtonArea/);
   assert.match(homeSpriteScript, /name:\s*'button-adventure\.png'/);
+  assert.match(homeSpriteScript, /name:\s*'button-games\.png'/);
+  assert.match(homeSpriteScript, /name:\s*'game-animal-floor\.png'/);
+  assert.match(homeSpriteScript, /name:\s*'game-bomb\.png'/);
+  assert.match(homeSpriteScript, /name:\s*'game-raindrop\.png'/);
   assert.match(homeSpriteScript, /name:\s*'home-brand-icon\.png'/);
   assert.match(homeSpriteScript, /name:\s*'home-map\.png'/);
   assert.match(homeSpriteScript, /const DRAWN_SPRITES = \[/);
@@ -87,11 +94,12 @@ test('home sprite assets are extracted from the B reference into reusable parts'
   assert.doesNotMatch(homeSpriteScript, /name:\s*'home-scenery-left\.png'/);
   assert.doesNotMatch(homeSpriteScript, /name:\s*'home-scenery-right\.png'/);
   assert.match(homeSpriteScript, /name:\s*'robot-guide\.png'/);
-  assert.match(homeSpriteScript, /DEPRECATED_SPRITES/);
-
   assert.deepEqual(readPngSize('../assets/sprites/button-adventure.png'), { width: 202, height: 188 });
   assert.deepEqual(readPngSize('../assets/sprites/button-practice.png'), { width: 198, height: 188 });
-  assert.deepEqual(readPngSize('../assets/sprites/button-editor.png'), { width: 198, height: 188 });
+  assert.deepEqual(readPngSize('../assets/sprites/button-games.png'), { width: 198, height: 188 });
+  assert.deepEqual(readPngSize('../assets/sprites/game-animal-floor.png'), { width: 320, height: 112 });
+  assert.deepEqual(readPngSize('../assets/sprites/game-bomb.png'), { width: 180, height: 180 });
+  assert.deepEqual(readPngSize('../assets/sprites/game-raindrop.png'), { width: 96, height: 112 });
   assert.deepEqual(readPngSize('../assets/sprites/home-brand-icon.png'), { width: 118, height: 128 });
   assert.deepEqual(readPngSize('../assets/sprites/robot-guide.png'), { width: 340, height: 357 });
   assert.deepEqual(readPngSize('../assets/sprites/speech-bubble.png'), { width: 246, height: 144 });
@@ -108,6 +116,150 @@ test('home sprite assets are extracted from the B reference into reusable parts'
   assert.deepEqual(readPngSize('../assets/sprites/bg-grass.png'), { width: 48, height: 28 });
   assert.equal(existsSync(new URL('../assets/sprites/home-scenery-left.png', import.meta.url)), false);
   assert.equal(existsSync(new URL('../assets/sprites/home-scenery-right.png', import.meta.url)), false);
+});
+
+test('countdown bomb sprite matches the black round bomb reference', () => {
+  const bomb = decodePng('../assets/sprites/game-bomb.png');
+  const bombDrawingSource = homeSpriteScript.match(/function drawBomb[\s\S]*?\n}\n\nfunction drawRaindrop/)?.[0] ?? '';
+  const sampleRows = Array.from({ length: 17 }, (_, index) => 40 + index * 8);
+  const profile = sampleRows.map((y) => opaqueBoundsInRow(bomb, y));
+  const widths = profile.map(({ minX, maxX }) => maxX - minX + 1);
+
+  assert.equal(sampleRows.length * 8, 136);
+  assert.equal(Math.max(...widths), 136);
+  assert.deepEqual(widths, [
+    48, 80, 96, 112, 120, 128, 136, 136, 136,
+    136, 136, 128, 120, 112, 96, 80, 48,
+  ]);
+  assert.equal(widths.filter((width) => width === 136).length, 5);
+  assert.ok(new Set(profile.map(({ minX }) => minX)).size >= 7);
+  profile.forEach(({ minX, maxX }) => assert.equal(minX + maxX, 179));
+
+  const fuseProfile = [16, 24].map((y) => colorBoundsInRow(bomb, y, ['#9b6b4b']));
+  assert.deepEqual(fuseProfile, [
+    { minX: 132, maxX: 139 },
+    { minX: 128, maxX: 135 },
+  ]);
+
+  const sparkRows = [0, 8, 16, 24, 32]
+    .map((y) => colorBoundsInRow(bomb, y, ['#ff4b2b', '#ffd23f']));
+  assert.deepEqual(
+    sparkRows.map(({ minX, maxX }) => maxX - minX + 1),
+    [8, 24, 40, 24, 8],
+  );
+  sparkRows.forEach(({ minX, maxX }) => assert.equal(minX + maxX, 319));
+
+  const sparkCoreRows = [8, 16, 24]
+    .map((y) => colorBoundsInRow(bomb, y, ['#ffd23f']));
+  assert.deepEqual(
+    sparkCoreRows.map(({ minX, maxX }) => maxX - minX + 1),
+    [8, 24, 8],
+  );
+  sparkCoreRows.forEach(({ minX, maxX }) => assert.equal(minX + maxX, 319));
+
+  assert.match(bombDrawingSource, /drawRect\(image, x, y, width, 8, ink\)/);
+  assert.match(bombDrawingSource, /drawRect\(image, x \+ 8, y, width - 16, 8, body\)/);
+  assert.ok(countColorPixels(bomb, '#302d2b') > 5000);
+  assert.ok(countColorPixels(bomb, '#ffffff') >= 160);
+  assert.ok(countColorPixels(bomb, '#9b6b4b') >= 80);
+  assert.ok(countColorPixels(bomb, '#ff4b2b') >= 64);
+  assert.ok(countColorPixels(bomb, '#ffd23f') >= 40);
+  assert.doesNotMatch(bombDrawingSource, /#ef476f|#ff9eb0/);
+  assert.match(bombDrawingSource, /drawRect\(image, 52, 96, 76, 40, '#fff8df'\)/);
+});
+
+test('countdown defuse uses a contrasting blue-gray arena', () => {
+  const bombArenaStyle = styleSource.match(/\.bomb-arena\s*\{([^}]*)\}/)?.[1] ?? '';
+
+  assert.match(bombArenaStyle, /rgba\(38, 53, 71, \.10\)/);
+  assert.match(bombArenaStyle, /#86a9c4/);
+  assert.match(bombArenaStyle, /#7699b6/);
+  assert.doesNotMatch(bombArenaStyle, /#263547/);
+});
+
+test('letter rain animals use separate pixel layers with continuous staggered motion', () => {
+  ['cat', 'frog', 'dog'].forEach((animal) => {
+    assert.match(appSource, new RegExp(`assets\\/sprites\\/game-animal-${animal}\\.png`));
+    assert.match(homeSpriteScript, new RegExp(`name:\\s*'game-animal-${animal}\\.png'`));
+    assert.deepEqual(
+      readPngSize(`../assets/sprites/game-animal-${animal}.png`),
+      { width: 80, height: 72 },
+    );
+  });
+
+  assert.match(appSource, /class="animal-floor" aria-hidden="true"/);
+  assert.match(appSource, /class="animal-floor-ground"/);
+  assert.match(styleSource, /\.animal-floor-cat\s*\{[\s\S]*animation:\s*animal-cat-idle 0\.9s steps\(1, end\) infinite/);
+  assert.match(styleSource, /\.animal-floor-frog\s*\{[\s\S]*animation:\s*animal-frog-idle 0\.8s steps\(1, end\) infinite/);
+  assert.match(styleSource, /\.animal-floor-dog\s*\{[\s\S]*animation:\s*animal-dog-idle 1s steps\(1, end\) infinite/);
+  assert.match(styleSource, /@keyframes animal-cat-idle\s*\{[\s\S]*25%, 75%\s*\{\s*transform:\s*translateY\(-2px\)/);
+  assert.match(styleSource, /@keyframes animal-frog-idle\s*\{[\s\S]*25%, 75%\s*\{\s*transform:\s*translateY\(-3px\)/);
+  assert.match(styleSource, /@keyframes animal-dog-idle\s*\{[\s\S]*25%, 75%\s*\{\s*transform:\s*translateY\(-2px\)[\s\S]*50%\s*\{\s*transform:\s*translateY\(-4px\)/);
+  const dogIdleKeyframes = styleSource.match(/@keyframes animal-dog-idle\s*\{([\s\S]*?)\n\}/)?.[1] ?? '';
+  assert.doesNotMatch(dogIdleKeyframes, /translateX/);
+  assert.match(styleSource, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.animal-floor-character\s*\{[\s\S]*animation:\s*none/);
+});
+
+test('countdown defuse keeps the bomb compact and renders a pixel explosion', () => {
+  assert.match(styleSource, /\.bomb-timer img\s*\{[^}]*width:\s*100%/);
+  assert.match(styleSource, /\.bomb-timer span\s*\{[^}]*font-size:\s*clamp\(20px, 2\.2vw, 30px\)/);
+  assert.match(homeSpriteScript, /drawRect\(image, 52, 96, 76, 40, '#fff8df'\)/);
+
+  const bombTimerStyle = styleSource.match(/\.bomb-timer\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(bombTimerStyle, /width:\s*min\(190px, 100%\)/);
+  assert.match(bombTimerStyle, /justify-self:\s*center/);
+
+  const bombClockStyle = styleSource.match(/\.bomb-timer span\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(bombClockStyle, /left:\s*28\.8889%/);
+  assert.match(bombClockStyle, /top:\s*53\.3333%/);
+  assert.match(bombClockStyle, /width:\s*42\.2222%/);
+  assert.match(bombClockStyle, /height:\s*22\.2222%/);
+  assert.match(bombClockStyle, /transform:\s*none/);
+  assert.match(bombClockStyle, /min-width:\s*0/);
+  assert.match(bombClockStyle, /padding:\s*0/);
+  assert.match(bombClockStyle, /display:\s*grid/);
+  assert.match(bombClockStyle, /place-items:\s*center/);
+  assert.doesNotMatch(bombClockStyle, /bottom:/);
+  assert.match(styleSource, /@media \(max-width: 860px\)[\s\S]*\.bomb-timer\s*\{[^}]*width:\s*min\(145px, 100%\)/);
+  assert.match(appSource, /function formatCountdownValue\(remainingMs\)/);
+  assert.match(appSource, /if \(clock\) clock\.textContent = remainingValue/);
+  assert.match(appSource, /session\.status === 'ended' \? 'has-exploded' : ''/);
+  assert.match(appSource, /class="bomb-explosion"/);
+  assert.match(appSource, /class="bomb-explosion-core"/);
+  assert.match(appSource, /class="bomb-explosion-ring"/);
+  assert.match(appSource, /class="bomb-explosion-debris"/);
+  assert.match(styleSource, /@keyframes bomb-explosion-flame/);
+  assert.match(styleSource, /@keyframes bomb-explosion-smoke/);
+  assert.match(styleSource, /@keyframes bomb-explosion-debris/);
+  assert.match(styleSource, /@keyframes bomb-arena-shake/);
+
+  const explosionCoreStyle = styleSource.match(/\.bomb-explosion-core\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(explosionCoreStyle, /width:\s*112px/);
+  assert.match(explosionCoreStyle, /height:\s*96px/);
+  assert.match(explosionCoreStyle, /clip-path:\s*polygon\(/);
+  assert.match(explosionCoreStyle, /background:\s*#ff4b2b/);
+  assert.match(explosionCoreStyle, /z-index:\s*3/);
+  assert.match(explosionCoreStyle, /animation:\s*bomb-explosion-flame 650ms cubic-bezier/);
+  assert.doesNotMatch(explosionCoreStyle, /border-radius:\s*50%/);
+  assert.match(styleSource, /\.bomb-explosion-core::before[\s\S]*background:\s*#ffd23f/);
+  assert.match(styleSource, /\.bomb-explosion-core::after[\s\S]*background:\s*#fff8df/);
+
+  const explosionSmokeStyle = styleSource.match(/\.bomb-explosion-ring\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(explosionSmokeStyle, /width:\s*92px/);
+  assert.match(explosionSmokeStyle, /height:\s*72px/);
+  assert.match(explosionSmokeStyle, /radial-gradient/);
+  assert.match(explosionSmokeStyle, /z-index:\s*2/);
+  assert.match(explosionSmokeStyle, /animation:\s*bomb-explosion-smoke 850ms ease-out both/);
+  assert.doesNotMatch(explosionSmokeStyle, /border:/);
+
+  const explosionDebrisStyle = styleSource.match(/\.bomb-explosion-debris\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(explosionDebrisStyle, /width:\s*8px/);
+  assert.match(explosionDebrisStyle, /height:\s*8px/);
+  assert.match(explosionDebrisStyle, /z-index:\s*4/);
+  assert.match(explosionDebrisStyle, /animation:\s*bomb-explosion-debris 700ms ease-out both/);
+  assert.match(styleSource, /\.bomb-explosion-debris::before[\s\S]*width:\s*6px/);
+  assert.match(styleSource, /\.bomb-explosion-debris::after[\s\S]*width:\s*4px/);
+  assert.match(styleSource, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.bomb-arena\.has-exploded/);
 });
 
 test('home layout uses the compact B-reference proportions', () => {
@@ -189,7 +341,7 @@ test('home sprite buttons show pixel tooltips with state-aware control text', ()
   assert.equal((appSource.match(/class="sprite-tooltip"/g) || []).length, 5);
   assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('startAdventure'\)\}<\/span>/);
   assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('freePractice'\)\}<\/span>/);
-  assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('editLevels'\)\}<\/span>/);
+  assert.match(appSource, /<span class="sprite-tooltip">\$\{tr\('gameModes'\)\}<\/span>/);
   assert.match(appSource, /const audioTooltip = state\.audioEnabled \? tr\('audioOffTooltip'\) : tr\('audioOnTooltip'\);/);
   assert.match(appSource, /const languageTooltip = state\.language === 'zh-CN' \? tr\('switchToEnglishTooltip'\) : tr\('switchToChineseTooltip'\);/);
   assert.match(appSource, /function getHomeLanguageIcon\(\) \{\s*return state\.language === 'zh-CN'\s*\?\s*'assets\/sprites\/icon-language-zh\.png'\s*:\s*'assets\/sprites\/icon-language-en\.png';\s*\}/);
@@ -204,32 +356,46 @@ test('turning audio off cancels any active browser speech immediately', () => {
   assert.match(appSource, /speechSynthesis\.cancel\(\)/);
 });
 
-test('active home sprite set contains the current generated assets only', () => {
-  [
-    '../assets/sprites/chest.png',
-    '../assets/sprites/home-node-1.png',
-    '../assets/sprites/home-node-2.png',
-    '../assets/sprites/home-node-3.png',
-    '../assets/sprites/home-node-4.png',
-    '../assets/sprites/home-map-preview.png',
-    '../assets/sprites/home-map-lower.png',
-    '../assets/sprites/home-node-5.png',
-    '../assets/sprites/icon-keyboard.png',
-    '../assets/sprites/icon-sound.png',
-    '../assets/sprites/icon-language.png',
-    '../assets/sprites/icon-pencil.png',
-    '../assets/sprites/icon-sword.png',
-    '../assets/sprites/lock.png',
-    '../assets/sprites/map-node-active.png',
-    '../assets/sprites/map-node-locked.png',
-    '../assets/sprites/star.png',
-  ].forEach((assetPath) => {
-    assert.equal(existsSync(new URL(assetPath, import.meta.url)), false, `${assetPath} is outside the active sprite set`);
-  });
+test('project cleanup keeps only active artifacts', () => {
+  const activeSprites = readdirSync(new URL('../assets/sprites/', import.meta.url), {
+    withFileTypes: true,
+  })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
 
-  ['sprite-trail', 'sprite-node', 'sprite-tree', 'sprite-chest'].forEach((excludedClass) => {
-    assert.doesNotMatch(styleSource, new RegExp(`\\.${excludedClass}\\b`), `${excludedClass} is outside the current CSS class set`);
-  });
+  assert.deepEqual(activeSprites, [
+    'bg-bush.png',
+    'bg-cloud-a.png',
+    'bg-cloud-b.png',
+    'bg-grass.png',
+    'bg-tree-left.png',
+    'bg-tree-right.png',
+    'button-adventure.png',
+    'button-games.png',
+    'button-practice.png',
+    'game-animal-cat.png',
+    'game-animal-dog.png',
+    'game-animal-floor.png',
+    'game-animal-frog.png',
+    'game-bomb.png',
+    'game-raindrop.png',
+    'home-brand-icon.png',
+    'home-map.png',
+    'icon-language-en.png',
+    'icon-language-zh.png',
+    'icon-sound-off.png',
+    'icon-sound-on.png',
+    'robot-guide.png',
+    'speech-bubble.png',
+  ]);
+  assert.doesNotMatch(homeSpriteScript, /DEPRECATED_SPRITES|unlinkSync/);
+  assert.equal(existsSync(new URL('../src/typing-display.js', import.meta.url)), false);
+  assert.equal(existsSync(new URL('./typing-display.test.mjs', import.meta.url)), false);
+  assert.doesNotMatch(
+    styleSource,
+    /\.pixel-btn\.danger|\.keycap\.good|\.empty-note|\.pixel-word\.large|\.mission-speech|\.mission-npc/,
+  );
 });
 
 test('PixelType logo is rendered from reusable letter sprite images', () => {
@@ -366,7 +532,7 @@ test('current home art uses sprite classes and glyph assets', () => {
 
   assert.match(appSource, /button-adventure\.png/);
   assert.match(appSource, /button-practice\.png/);
-  assert.match(appSource, /button-editor\.png/);
+  assert.match(appSource, /button-games\.png/);
 });
 
 test('lowercase i keeps a square top dot in the sprite source', () => {
@@ -591,6 +757,66 @@ function decodePng(assetPath) {
   return { width, height, alpha, rgba };
 }
 
+function opaqueBoundsInRow(png, y) {
+  let minX = png.width;
+  let maxX = -1;
+  for (let x = 0; x < png.width; x += 1) {
+    if (png.alpha[y * png.width + x] === 0) continue;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+  }
+  assert.notEqual(maxX, -1, `row ${y} should contain opaque bomb pixels`);
+  return { minX, maxX };
+}
+
+function colorBoundsInRow(png, y, hexes) {
+  const expected = hexes.map((hex) => {
+    const value = hex.replace('#', '');
+    return [
+      Number.parseInt(value.slice(0, 2), 16),
+      Number.parseInt(value.slice(2, 4), 16),
+      Number.parseInt(value.slice(4, 6), 16),
+    ];
+  });
+  let minX = png.width;
+  let maxX = -1;
+
+  for (let x = 0; x < png.width; x += 1) {
+    const index = (y * png.width + x) * 4;
+    const matches = expected.some(([r, g, b]) => (
+      png.rgba[index] === r
+      && png.rgba[index + 1] === g
+      && png.rgba[index + 2] === b
+      && png.rgba[index + 3] === 255
+    ));
+    if (!matches) continue;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+  }
+
+  assert.notEqual(maxX, -1, `row ${y} should contain one of ${hexes.join(', ')}`);
+  return { minX, maxX };
+}
+
+function countColorPixels(png, hex) {
+  const value = hex.replace('#', '');
+  const expected = [
+    Number.parseInt(value.slice(0, 2), 16),
+    Number.parseInt(value.slice(2, 4), 16),
+    Number.parseInt(value.slice(4, 6), 16),
+  ];
+  let count = 0;
+  for (let index = 0; index < png.rgba.length; index += 4) {
+    if (
+      png.rgba[index] === expected[0]
+      && png.rgba[index + 1] === expected[1]
+      && png.rgba[index + 2] === expected[2]
+      && png.rgba[index + 3] === 255
+    ) count += 1;
+  }
+  return count;
+}
+
 function pngFilterPrediction(type, left, up, upperLeft) {
   if (type === 0) return 0;
   if (type === 1) return left;
@@ -773,10 +999,7 @@ test('mission practice layout keeps target and input areas in separate flow regi
 });
 
 test('mission practice removes the constant guide bubble while keeping the intro guide icon', () => {
-  assert.doesNotMatch(appSource, /class="mission-npc"/);
-  assert.doesNotMatch(appSource, /class="mission-speech"/);
   assert.match(appSource, /<img class="intro-guide-icon" src="assets\/sprites\/home-brand-icon\.png"/);
-  assert.doesNotMatch(appSource, /<div class="mission-npc">\$\{tr\('guideLabel'\)\}<\/div>/);
   assert.doesNotMatch(appSource, /class="npc-sprite small"/);
   assert.match(styleSource, /\.intro-guide-icon\s*{[\s\S]*width:\s*118px/);
 });

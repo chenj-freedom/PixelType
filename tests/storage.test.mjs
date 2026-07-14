@@ -2,9 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createMemoryStorage,
-  loadCustomLevels,
   loadProgress,
-  saveCustomLevel,
   saveLevelResult,
 } from '../src/storage.js';
 
@@ -42,20 +40,4 @@ test('does not replace a better previous star score', () => {
   ]);
 
   assert.equal(progress.levelStars['level-1'], 3);
-});
-
-test('saves custom levels with stable ids', () => {
-  const storage = createMemoryStorage();
-  const saved = saveCustomLevel(storage, {
-    title: '动物单词',
-    targets: ['cat', 'dog'],
-    difficulty: 'normal',
-    npcLanguage: 'zh-CN',
-  });
-
-  const levels = loadCustomLevels(storage);
-
-  assert.equal(levels.length, 1);
-  assert.equal(levels[0].id, saved.id);
-  assert.deepEqual(levels[0].targets, ['cat', 'dog']);
 });

@@ -1,5 +1,18 @@
 (function () {
-  const { FREE_PRACTICE_MODES, buildFreePracticeMission } = window.PixelTypeFreePractice;
+  const { FREE_PRACTICE_MODES, FREE_PRACTICE_POOLS, buildFreePracticeMission } = window.PixelTypeFreePractice;
+  const {
+    RAIN_MISS_LIMIT,
+    calculateRainLandingY,
+    createRainSession,
+    advanceRainSession,
+    hitRainLetter,
+    createBombSession,
+    advanceBombSession,
+    typeBombKey,
+    getElapsedSeconds,
+  } = window.PixelTypeGameModes;
+  const { createRainAudioEngine } = window.PixelTypeRainAudioEngine;
+  const { createBombAudioEngine } = window.PixelTypeBombAudioEngine;
   const UNLOCK_REQUIRED_STARS = 2;
 
   const BUILT_IN_LEVELS = [
@@ -88,14 +101,32 @@
       freePracticeSentencesSubtitle: '练习空格和标点',
       freePracticeMixed: '混合练习',
       freePracticeMixedSubtitle: '字母、单词、句子一起复习',
-      editLevels: '编辑关卡',
+      gameModes: '游戏模式',
+      gameModesChoose: '选择一个小游戏，开始趣味打字挑战。',
+      letterRain: '字母雨滴',
+      letterRainSubtitle: '敲掉雨滴中的字母，保护小动物',
+      countdownDefuse: '倒计时拆弹',
+      countdownDefuseSubtitle: '在爆炸前输入完整句子',
+      backGameModes: '返回游戏模式',
+      lowSpeed: '低速',
+      highSpeed: '高速',
+      startGame: '开始游戏',
+      survivalTime: '坚持时长',
+      clearedDrops: '消除雨滴',
+      missedDrops: '漏接雨滴',
+      seconds: '秒',
+      rainGameOver: '小动物被淋湿了',
+      playAgain: '再玩一次',
+      defusedBombs: '成功拆弹',
+      countdown: '倒计时',
+      bombGameOver: '炸弹爆炸了',
+      typingErrors: '错误次数',
       backHome: '返回首页',
       backMap: '返回地图',
       mapTitle: '闯关地图',
       unlockHint: '达到 2 星解锁下一关',
       unlockReady: '已达到 2 星，可以解锁下一关。',
       unlockNeedsMoreStars: '达到 2 星才能解锁下一关。',
-      customArea: '自定义关卡',
       locked: '未解锁',
       startLevel: '开始',
     introListening: '正在听小向导介绍...',
@@ -116,31 +147,14 @@
       resultRetry: '再练一次',
       resultContinue: '回到地图',
       backFreePractice: '返回自由练习',
-      editorTitle: '关卡编辑器',
-      editorName: '关卡名称',
-      editorDefaultTitle: '动物单词',
-      editorTargets: '练习内容',
-      editorTargetsHint: '用逗号或换行分隔，例如 cat, dog, fish',
-      editorDifficulty: '难度',
-      editorNpcLanguage: 'NPC 语音',
-      editorPreviewSpeech: '小向导：请输入这个动物单词！',
-      customLevelDefaultTitle: '自定义关卡',
-      customLevelDefaultSubtitle: '自定义练习',
-      customLevelDefaultNpcLine: '看准目标，一个字母一个字母输入。',
       languageChinese: '中文',
       languageEnglish: 'English',
-      saveLevel: '保存关卡',
-      preview: '预览',
-      noCustomLevels: '还没有自定义关卡。',
       audioOn: '声音开',
       audioOff: '声音关',
       audioOnTooltip: '音量开',
       audioOffTooltip: '音量关',
       switchToChineseTooltip: '切换到中文',
       switchToEnglishTooltip: '切换到英文',
-      difficultySlow: '慢速',
-      difficultyNormal: '普通',
-      difficultyChallenge: '挑战',
       correctHint: '很好，继续！',
       errorHint: '再试一次，看准下一个字母。',
       completeHint: '完成啦，看看获得几颗星。',
@@ -194,14 +208,32 @@
       freePracticeSentencesSubtitle: 'Practice spaces and punctuation',
       freePracticeMixed: 'Mixed Practice',
       freePracticeMixedSubtitle: 'Review letters, words, and sentences',
-      editLevels: 'Level Editor',
+      gameModes: 'Game Modes',
+      gameModesChoose: 'Choose a mini game and start a typing challenge.',
+      letterRain: 'Letter Rain',
+      letterRainSubtitle: 'Clear letter drops and keep the animals dry',
+      countdownDefuse: 'Countdown Defuse',
+      countdownDefuseSubtitle: 'Type the full sentence before the blast',
+      backGameModes: 'Back to Game Modes',
+      lowSpeed: 'Low Speed',
+      highSpeed: 'High Speed',
+      startGame: 'Start Game',
+      survivalTime: 'Survival Time',
+      clearedDrops: 'Drops Cleared',
+      missedDrops: 'Drops Missed',
+      seconds: 's',
+      rainGameOver: 'The animals got wet',
+      playAgain: 'Play Again',
+      defusedBombs: 'Bombs Defused',
+      countdown: 'Countdown',
+      bombGameOver: 'The bomb exploded',
+      typingErrors: 'Errors',
       backHome: 'Home',
       backMap: 'Map',
       mapTitle: 'Level Map',
       unlockHint: 'Earn 2 stars to unlock the next level',
       unlockReady: 'You earned 2 stars. The next level can unlock.',
       unlockNeedsMoreStars: 'Earn 2 stars to unlock the next level.',
-      customArea: 'Custom Levels',
       locked: 'Locked',
       startLevel: 'Start',
     introListening: 'Listening to the guide...',
@@ -222,31 +254,14 @@
       resultRetry: 'Try Again',
       resultContinue: 'Back to Map',
       backFreePractice: 'Back to Free Practice',
-      editorTitle: 'Level Editor',
-      editorName: 'Level Name',
-      editorDefaultTitle: 'Animal Words',
-      editorTargets: 'Targets',
-      editorTargetsHint: 'Separate with commas or lines, such as cat, dog, fish',
-      editorDifficulty: 'Difficulty',
-      editorNpcLanguage: 'NPC Voice',
-      editorPreviewSpeech: 'Guide: Type this animal word!',
-      customLevelDefaultTitle: 'Custom Level',
-      customLevelDefaultSubtitle: 'Custom Practice',
-      customLevelDefaultNpcLine: 'Look at the target and type one letter at a time.',
       languageChinese: '中文',
       languageEnglish: 'English',
-      saveLevel: 'Save Level',
-      preview: 'Preview',
-      noCustomLevels: 'No custom levels yet.',
       audioOn: 'Sound On',
       audioOff: 'Sound Off',
       audioOnTooltip: 'Sound On',
       audioOffTooltip: 'Sound Off',
       switchToChineseTooltip: 'Switch to 中文',
       switchToEnglishTooltip: 'Switch to English',
-      difficultySlow: 'Slow',
-      difficultyNormal: 'Normal',
-      difficultyChallenge: 'Challenge',
       correctHint: 'Great, keep going!',
       errorHint: 'Try again. Look at the next letter.',
       completeHint: 'Finished! Let us count your stars.',
@@ -285,17 +300,18 @@
 
   const STORAGE_KEYS = {
     progress: 'pixeltype.progress.v1',
-    customLevels: 'pixeltype.customLevels.v1',
     language: 'pixeltype.language.v1',
     audio: 'pixeltype.audio.v1',
   };
+
+  const rainAudioEngine = createRainAudioEngine();
+  const bombAudioEngine = createBombAudioEngine();
 
   const state = {
     view: 'home',
     language: loadValue(STORAGE_KEYS.language, 'zh-CN'),
     audioEnabled: loadAudioEnabled(),
     progress: loadJson(STORAGE_KEYS.progress, { unlockedLevelIds: ['level-1'], levelStars: {} }),
-    customLevels: loadJson(STORAGE_KEYS.customLevels, []),
     currentLevel: null,
     session: null,
     introStatus: 'idle',
@@ -303,11 +319,22 @@
     introToken: 0,
     keyboardCase: 'lower',
     result: null,
+    rainSession: null,
+    bombSession: null,
+    gameAnimationFrame: null,
   };
 
   const app = document.getElementById('app');
 
   document.addEventListener('keydown', (event) => {
+    if (state.view === 'letter-rain') {
+      handleLetterRainKey(event);
+      return;
+    }
+    if (state.view === 'countdown-defuse') {
+      handleCountdownDefuseKey(event);
+      return;
+    }
     if (state.view !== 'mission' || !state.session) return;
     if (isCapsLockEvent(event)) {
       event.preventDefault();
@@ -344,11 +371,7 @@
   }
 
   function getLevels() {
-    return [...BUILT_IN_LEVELS, ...state.customLevels.map((custom, index) => ({
-      ...custom,
-      order: BUILT_IN_LEVELS.length + index + 1,
-      isCustom: true,
-    }))];
+    return [...BUILT_IN_LEVELS];
   }
 
   function render() {
@@ -356,7 +379,9 @@
     if (state.view === 'map') renderMap();
     else if (state.view === 'mission') renderMission();
     else if (state.view === 'free-practice') renderFreePractice();
-    else if (state.view === 'editor') renderEditor();
+    else if (state.view === 'games') renderGameModes();
+    else if (state.view === 'letter-rain') renderLetterRain();
+    else if (state.view === 'countdown-defuse') renderCountdownDefuse();
     else renderHome();
   }
 
@@ -428,10 +453,10 @@
                 <span class="sr-only">${tr('freePractice')}</span>
                 <span class="sprite-tooltip">${tr('freePractice')}</span>
               </button>
-              <button class="sprite-card editor-card" data-action="show-editor" aria-label="${tr('editLevels')}">
-                <img class="home-sprite button-sprite" src="assets/sprites/button-editor.png" alt="">
-                <span class="sr-only">${tr('editLevels')}</span>
-                <span class="sprite-tooltip">${tr('editLevels')}</span>
+              <button class="sprite-card games-card" data-action="show-games" aria-label="${tr('gameModes')}">
+                <img class="home-sprite button-sprite" src="assets/sprites/button-games.png" alt="">
+                <span class="sr-only">${tr('gameModes')}</span>
+                <span class="sprite-tooltip">${tr('gameModes')}</span>
               </button>
             </nav>
 
@@ -471,7 +496,6 @@
       <div class="map-screen">
         <div class="toolbar">
           <button class="pixel-btn" data-action="home">${tr('backHome')}</button>
-          <button class="pixel-btn secondary" data-action="show-editor">${tr('editLevels')}</button>
         </div>
         <h2>${tr('mapTitle')}</h2>
         <p class="unlock-hint">${tr('unlockHint')}</p>
@@ -480,7 +504,6 @@
             ${levels.map((item) => renderLevelNode(item)).join('')}
           </div>
         </section>
-        ${state.customLevels.length === 0 ? `<div class="empty-note">${tr('noCustomLevels')}</div>` : ''}
       </div>
     `);
     document.querySelectorAll('[data-level-id]').forEach((button) => {
@@ -519,13 +542,176 @@
     `;
   }
 
+  function renderGameModes() {
+    renderShell(`
+      <div class="game-modes-screen">
+        <div class="toolbar">
+          <button class="pixel-btn" data-action="home">${tr('backHome')}</button>
+        </div>
+        <section class="game-modes-board">
+          <div class="game-modes-heading">
+            <h2>${tr('gameModes')}</h2>
+            <p>${tr('gameModesChoose')}</p>
+          </div>
+          <div class="game-modes-grid">
+            <article class="game-mode-card rain-mode-card">
+              <span class="game-mode-badge">A-Z</span>
+              <div class="game-mode-copy">
+                <h3>${tr('letterRain')}</h3>
+                <p>${tr('letterRainSubtitle')}</p>
+                <div class="game-mode-actions">
+                  <button class="pixel-btn primary" data-action="start-letter-rain" data-difficulty="low">${tr('lowSpeed')}</button>
+                  <button class="pixel-btn secondary" data-action="start-letter-rain" data-difficulty="high">${tr('highSpeed')}</button>
+                </div>
+              </div>
+            </article>
+            <article class="game-mode-card bomb-mode-card">
+              <span class="game-mode-badge">00:10</span>
+              <div class="game-mode-copy">
+                <h3>${tr('countdownDefuse')}</h3>
+                <p>${tr('countdownDefuseSubtitle')}</p>
+                <div class="game-mode-actions">
+                  <button class="pixel-btn primary" data-action="start-countdown-defuse">${tr('startGame')}</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    `);
+  }
+
+  function renderLetterRain() {
+    const session = state.rainSession;
+    if (!session) {
+      showGameModes();
+      return;
+    }
+    const elapsed = getElapsedSeconds(session, performance.now());
+    renderShell(`
+      <div class="mini-game-screen letter-rain-screen">
+        <div class="toolbar mini-game-toolbar">
+          <button class="pixel-btn" data-action="show-games">${tr('backGameModes')}</button>
+        </div>
+        <div class="mini-game-stats">
+          <div class="stat-box"><span>${tr('survivalTime')}</span><strong id="rain-time">${elapsed}${tr('seconds')}</strong></div>
+          <div class="stat-box"><span>${tr('clearedDrops')}</span><strong id="rain-cleared">${session.cleared}</strong></div>
+          <div class="stat-box"><span>${tr('missedDrops')}</span><strong id="rain-misses">${session.misses}/${RAIN_MISS_LIMIT}</strong></div>
+          <div class="stat-box"><span>${tr('wpm')}</span><strong>${tr(session.difficulty === 'high' ? 'highSpeed' : 'lowSpeed')}</strong></div>
+        </div>
+        <section class="rain-arena" aria-label="${tr('letterRain')}">
+          <div id="rain-layer" class="rain-layer">${renderRainDrops(session.drops)}</div>
+          <div id="rain-splash-layer" class="rain-splash-layer" aria-hidden="true"></div>
+          <div class="animal-floor" aria-hidden="true">
+            <img class="animal-floor-ground" src="assets/sprites/game-animal-floor.png" alt="">
+            <img class="animal-floor-character animal-floor-cat" src="assets/sprites/game-animal-cat.png" alt="">
+            <img class="animal-floor-character animal-floor-frog" src="assets/sprites/game-animal-frog.png" alt="">
+            <img class="animal-floor-character animal-floor-dog" src="assets/sprites/game-animal-dog.png" alt="">
+          </div>
+          ${session.status === 'ended' ? renderMiniGameResult({
+            title: tr('rainGameOver'),
+            stats: [
+              `${tr('survivalTime')}：${elapsed}${tr('seconds')}`,
+              `${tr('clearedDrops')}：${session.cleared}`,
+            ],
+            retryAction: 'retry-letter-rain',
+          }) : ''}
+        </section>
+      </div>
+    `);
+  }
+
+  function renderRainDrops(drops) {
+    return drops.map((drop) => `
+      <div class="rain-drop" data-drop-id="${drop.id}" style="--drop-x:${drop.xPercent}%;--drop-y:${drop.y}px">
+        <img class="rain-drop-sprite" src="assets/sprites/game-raindrop.png" alt="">
+        <span>${drop.letter}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderCountdownDefuse() {
+    const session = state.bombSession;
+    if (!session) {
+      showGameModes();
+      return;
+    }
+    const now = performance.now();
+    const remainingMs = Math.max(0, session.deadlineAt - now);
+    renderShell(`
+      <div class="mini-game-screen countdown-defuse-screen">
+        <div class="toolbar mini-game-toolbar">
+          <button class="pixel-btn" data-action="show-games">${tr('backGameModes')}</button>
+        </div>
+        <div class="mini-game-stats bomb-stats">
+          <div class="stat-box"><span>${tr('countdown')}</span><strong id="bomb-time">${formatCountdown(remainingMs)}</strong></div>
+          <div class="stat-box"><span>${tr('defusedBombs')}</span><strong id="bomb-defused">${session.defused}</strong></div>
+          <div class="stat-box"><span>${tr('typingErrors')}</span><strong id="bomb-errors">${session.errors}</strong></div>
+          <div class="stat-box"><span>${tr('progress')}</span><strong id="bomb-round">${session.round}</strong></div>
+        </div>
+        <section class="bomb-arena ${session.feedback === 'error' ? 'has-error' : ''} ${session.status === 'ended' ? 'has-exploded' : ''}" aria-label="${tr('countdownDefuse')}">
+          <div class="bomb-timer" aria-hidden="true">
+            <img src="assets/sprites/game-bomb.png" alt="">
+            <span id="bomb-clock">${formatCountdownValue(remainingMs)}</span>
+          </div>
+          <div id="bomb-sentence" class="bomb-sentence-progress">${renderBombSentence(session.sentence, session.input)}</div>
+          ${session.status === 'ended' ? `
+            <div class="bomb-explosion" aria-hidden="true">
+              <span class="bomb-explosion-core"></span>
+              <span class="bomb-explosion-ring"></span>
+              <span class="bomb-explosion-debris"></span>
+            </div>
+          ` : ''}
+          ${session.status === 'ended' ? renderMiniGameResult({
+            title: tr('bombGameOver'),
+            stats: [
+              `${tr('survivalTime')}：${getElapsedSeconds(session, now)}${tr('seconds')}`,
+              `${tr('defusedBombs')}：${session.defused}`,
+            ],
+            retryAction: 'retry-countdown-defuse',
+          }) : ''}
+        </section>
+      </div>
+    `);
+  }
+
+  function renderBombSentence(sentence, input) {
+    const typed = escapeHtml(sentence.slice(0, input.length));
+    const next = escapeHtml(sentence[input.length] || '');
+    const pending = escapeHtml(sentence.slice(input.length + (next ? 1 : 0)));
+    return `<span class="bomb-typed">${typed}</span><span class="bomb-next">${next}</span><span class="bomb-pending">${pending}</span>`;
+  }
+
+  function formatCountdown(remainingMs) {
+    return `${Math.max(0, remainingMs / 1000).toFixed(1)}${tr('seconds')}`;
+  }
+
+  function formatCountdownValue(remainingMs) {
+    return Math.max(0, remainingMs / 1000).toFixed(1);
+  }
+
+  function renderMiniGameResult({ title, stats, retryAction }) {
+    return `
+      <div class="mini-game-result">
+        <div class="mini-game-result-card">
+          <h2>${title}</h2>
+          ${stats.map((item) => `<p>${item}</p>`).join('')}
+          <div class="hero-actions">
+            <button class="pixel-btn secondary" data-action="${retryAction}">${tr('playAgain')}</button>
+            <button class="pixel-btn primary" data-action="show-games">${tr('backGameModes')}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderLevelNode(item) {
-    const unlocked = item.isCustom || state.progress.unlockedLevelIds.includes(item.id);
+    const unlocked = state.progress.unlockedLevelIds.includes(item.id);
     const stars = state.progress.levelStars[item.id] || 0;
     const title = item.title || tr(item.titleKey);
     const subtitle = item.subtitle || tr(item.subtitleKey);
     return `
-      <article class="level-node ${unlocked ? 'unlocked' : 'locked'} ${item.isCustom ? 'custom' : ''}">
+      <article class="level-node ${unlocked ? 'unlocked' : 'locked'}">
         <div class="level-number">${item.order}</div>
         <h3>${escapeHtml(title)}</h3>
         <p>${escapeHtml(subtitle)}</p>
@@ -568,52 +754,6 @@
     `);
   }
 
-  function renderEditor() {
-    renderShell(`
-      <div class="editor-screen">
-        <div class="toolbar">
-          <button class="pixel-btn" data-action="show-map">${tr('backMap')}</button>
-          <button class="pixel-btn" data-action="home">${tr('backHome')}</button>
-        </div>
-        <h2>${tr('editorTitle')}</h2>
-        <div class="editor-layout">
-          <form class="form-card" id="level-form">
-            <label class="field">
-              ${tr('editorName')}
-              <input name="title" value="${tr('editorDefaultTitle')}">
-            </label>
-            <label class="field">
-              ${tr('editorTargets')}
-              <textarea name="targets" placeholder="${tr('editorTargetsHint')}">cat, dog, bird, fish</textarea>
-            </label>
-            <label class="field">
-              ${tr('editorDifficulty')}
-              <select name="difficulty">
-                <option value="slow">${tr('difficultySlow')}</option>
-                <option value="normal" selected>${tr('difficultyNormal')}</option>
-                <option value="challenge">${tr('difficultyChallenge')}</option>
-              </select>
-            </label>
-            <label class="field">
-              ${tr('editorNpcLanguage')}
-              <select name="npcLanguage">
-                <option value="zh-CN">${tr('languageChinese')}</option>
-                <option value="en-US">${tr('languageEnglish')}</option>
-              </select>
-            </label>
-            <button class="pixel-btn primary" type="submit">${tr('saveLevel')}</button>
-          </form>
-          <aside class="preview-card">
-            <h3>${tr('preview')}</h3>
-            <div class="target-card" style="position:static;transform:none;margin:18px auto;">cat</div>
-            <div class="speech">${tr('editorPreviewSpeech')}</div>
-          </aside>
-        </div>
-      </div>
-    `);
-    document.getElementById('level-form').addEventListener('submit', saveEditorLevel);
-  }
-
   function renderResultModal() {
     const result = state.result;
     const continueLabel = state.currentLevel?.isFreePractice ? tr('backFreePractice') : tr('resultContinue');
@@ -645,7 +785,11 @@
         if (action === 'toggle-audio') toggleAudio();
         if (action === 'show-map') showMap();
         if (action === 'home') showHome();
-        if (action === 'show-editor') showEditor();
+        if (action === 'show-games') showGameModes();
+        if (action === 'start-letter-rain') startLetterRain(button.dataset.difficulty);
+        if (action === 'retry-letter-rain') startLetterRain(state.rainSession?.difficulty || 'low');
+        if (action === 'start-countdown-defuse') startCountdownDefuse();
+        if (action === 'retry-countdown-defuse') startCountdownDefuse();
         if (action === 'start-free') showFreePractice();
         if (action === 'start-free-mode') startFreePractice(button.dataset.mode);
         if (action === 'begin-practice') beginPractice();
@@ -660,6 +804,7 @@
   }
 
   function showHome() {
+    stopGameLoop();
     state.view = 'home';
     state.currentLevel = null;
     state.session = null;
@@ -670,6 +815,7 @@
   }
 
   function showMap() {
+    stopGameLoop();
     state.view = 'map';
     state.introStatus = 'idle';
     state.introToken += 1;
@@ -678,6 +824,7 @@
   }
 
   function showFreePractice() {
+    stopGameLoop();
     state.view = 'free-practice';
     state.currentLevel = null;
     state.session = null;
@@ -687,10 +834,170 @@
     render();
   }
 
-  function showEditor() {
-    state.view = 'editor';
+  function showGameModes() {
+    stopGameLoop();
+    state.view = 'games';
+    state.rainSession = null;
+    state.bombSession = null;
     state.result = null;
     render();
+  }
+
+  function startLetterRain(difficulty = 'low') {
+    stopGameLoop();
+    if (state.audioEnabled) rainAudioEngine.start();
+    const now = performance.now();
+    state.rainSession = createRainSession({ difficulty, now });
+    state.bombSession = null;
+    state.view = 'letter-rain';
+    render();
+    startGameLoop();
+  }
+
+  function handleLetterRainKey(event) {
+    if (!state.rainSession || state.rainSession.status !== 'playing') return;
+    if (!/^[a-z]$/i.test(event.key || '')) return;
+    event.preventDefault();
+    const clearedBefore = state.rainSession.cleared;
+    state.rainSession = hitRainLetter(state.rainSession, event.key);
+    playFeedbackSound(state.rainSession.cleared > clearedBefore ? 'rain-hit' : 'error');
+    updateLetterRainScene(performance.now());
+  }
+
+  function startCountdownDefuse() {
+    stopGameLoop();
+    if (state.audioEnabled) bombAudioEngine.start();
+    const now = performance.now();
+    state.bombSession = createBombSession({
+      sentences: FREE_PRACTICE_POOLS.sentences,
+      now,
+    });
+    state.rainSession = null;
+    state.view = 'countdown-defuse';
+    render();
+    startGameLoop();
+  }
+
+  function handleCountdownDefuseKey(event) {
+    if (!state.bombSession || state.bombSession.status !== 'playing') return;
+    if (event.ctrlKey || event.metaKey || event.altKey || typeof event.key !== 'string' || event.key.length !== 1) return;
+    event.preventDefault();
+    const previousInput = state.bombSession.input;
+    const previousDefused = state.bombSession.defused;
+    state.bombSession = typeBombKey(state.bombSession, event.key, { now: performance.now() });
+    if (state.bombSession.feedback === 'error') {
+      playFeedbackSound('error');
+      showBombError();
+      return;
+    }
+    playFeedbackSound('correct');
+    if (state.bombSession.defused > previousDefused) {
+      renderCountdownDefuse();
+      startGameLoop();
+      return;
+    }
+    if (state.bombSession.input !== previousInput) updateCountdownDefuseScene(performance.now());
+  }
+
+  function startGameLoop() {
+    if (state.gameAnimationFrame !== null) return;
+    state.gameAnimationFrame = window.requestAnimationFrame(runGameFrame);
+  }
+
+  function stopGameLoop() {
+    rainAudioEngine.stop();
+    bombAudioEngine.stop();
+    if (state.gameAnimationFrame !== null) {
+      window.cancelAnimationFrame(state.gameAnimationFrame);
+      state.gameAnimationFrame = null;
+    }
+  }
+
+  function runGameFrame(now) {
+    state.gameAnimationFrame = null;
+    if (state.view === 'letter-rain' && state.rainSession?.status === 'playing') {
+      const missesBefore = state.rainSession.misses;
+      const arena = document.querySelector('.rain-arena');
+      const landingY = calculateRainLandingY(arena?.clientHeight || 500);
+      state.rainSession = advanceRainSession(state.rainSession, { now, landingY });
+      if (state.rainSession.misses > missesBefore) {
+        playRainLandingSound();
+        showRainSplashes(state.rainSession.landedDrops);
+      }
+      if (state.rainSession.status === 'ended') {
+        stopGameLoop();
+        renderLetterRain();
+        return;
+      }
+      updateLetterRainScene(now);
+      startGameLoop();
+      return;
+    }
+    if (state.view === 'countdown-defuse' && state.bombSession?.status === 'playing') {
+      state.bombSession = advanceBombSession(state.bombSession, now);
+      if (state.bombSession.status === 'ended') {
+        if (state.audioEnabled) bombAudioEngine.playExplosion();
+        renderCountdownDefuse();
+        return;
+      }
+      updateCountdownDefuseScene(now);
+      startGameLoop();
+    }
+  }
+
+  function updateLetterRainScene(now) {
+    const session = state.rainSession;
+    if (!session) return;
+    const layer = document.getElementById('rain-layer');
+    const time = document.getElementById('rain-time');
+    const cleared = document.getElementById('rain-cleared');
+    const misses = document.getElementById('rain-misses');
+    if (layer) layer.innerHTML = renderRainDrops(session.drops);
+    if (time) time.textContent = `${getElapsedSeconds(session, now)}${tr('seconds')}`;
+    if (cleared) cleared.textContent = String(session.cleared);
+    if (misses) misses.textContent = `${session.misses}/${RAIN_MISS_LIMIT}`;
+  }
+
+  function showRainSplashes(landedDrops) {
+    const layer = document.getElementById('rain-splash-layer');
+    if (!layer) return;
+    landedDrops.forEach((drop) => {
+      const splash = document.createElement('span');
+      splash.className = 'rain-splash visible';
+      splash.style.left = `${drop.xPercent}%`;
+      layer.appendChild(splash);
+      window.setTimeout(() => splash.remove(), 420);
+    });
+  }
+
+  function updateCountdownDefuseScene(now) {
+    const session = state.bombSession;
+    if (!session) return;
+    const remainingMs = Math.max(0, session.deadlineAt - now);
+    const remaining = formatCountdown(remainingMs);
+    const remainingValue = formatCountdownValue(remainingMs);
+    const time = document.getElementById('bomb-time');
+    const clock = document.getElementById('bomb-clock');
+    const sentence = document.getElementById('bomb-sentence');
+    const defused = document.getElementById('bomb-defused');
+    const errors = document.getElementById('bomb-errors');
+    const round = document.getElementById('bomb-round');
+    if (time) time.textContent = remaining;
+    if (clock) clock.textContent = remainingValue;
+    if (sentence) sentence.innerHTML = renderBombSentence(session.sentence, session.input);
+    if (defused) defused.textContent = String(session.defused);
+    if (errors) errors.textContent = String(session.errors);
+    if (round) round.textContent = String(session.round);
+  }
+
+  function showBombError() {
+    const arena = document.querySelector('.bomb-arena');
+    if (!arena) return;
+    arena.classList.remove('has-error');
+    void arena.offsetWidth;
+    arena.classList.add('has-error');
+    const errors = document.getElementById('bomb-errors');
+    if (errors) errors.textContent = String(state.bombSession.errors);
   }
 
   function toggleLanguage() {
@@ -703,6 +1010,13 @@
   function toggleAudio() {
     state.audioEnabled = !state.audioEnabled;
     localStorage.setItem(STORAGE_KEYS.audio, String(state.audioEnabled));
+    if (state.audioEnabled) {
+      if (state.view === 'letter-rain' && state.rainSession?.status === 'playing') rainAudioEngine.start();
+      if (state.view === 'countdown-defuse' && state.bombSession?.status === 'playing') bombAudioEngine.start();
+    } else {
+      rainAudioEngine.stop();
+      bombAudioEngine.stop();
+    }
     const canceledSpeech = cancelActiveSpeechOnAudioOff(state.audioEnabled, window.speechSynthesis);
     if (canceledSpeech && state.view === 'mission' && state.introStatus === 'speaking') {
       completeIntro(state.introToken);
@@ -848,23 +1162,6 @@
     render();
   }
 
-  function saveEditorLevel(event) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const custom = normalizeCustomLevel({
-      title: form.get('title'),
-      targets: form.get('targets'),
-      difficulty: form.get('difficulty'),
-      npcLanguage: form.get('npcLanguage'),
-    });
-    state.customLevels.push(custom);
-    localStorage.setItem(STORAGE_KEYS.customLevels, JSON.stringify(state.customLevels));
-    state.progress.unlockedLevelIds.push(custom.id);
-    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(state.progress));
-    state.view = 'map';
-    render();
-  }
-
   function createTypingSession(options) {
     return {
       targets: options.targets,
@@ -943,29 +1240,6 @@
 
   function shouldUnlockNextLevel(result) {
     return result.passed && (result.stars || 0) >= UNLOCK_REQUIRED_STARS;
-  }
-
-  function normalizeCustomLevel(input) {
-    const targets = String(input.targets || '')
-      .split(/[\n,，]+/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-    const focusKeys = [...new Set(targets.join('').toUpperCase().replace(/[^A-Z]/g, '').split(''))].slice(0, 12);
-    return {
-      id: `custom-${Date.now()}`,
-      order: BUILT_IN_LEVELS.length + state.customLevels.length + 1,
-      title: String(input.title || '').trim() || tr('customLevelDefaultTitle'),
-      subtitle: tr('customLevelDefaultSubtitle'),
-      focusKeys,
-      targets: targets.length ? targets : ['cat', 'dog'],
-      targetAccuracy: input.difficulty === 'challenge' ? 92 : 85,
-      difficulty: input.difficulty,
-      npcLanguage: input.npcLanguage,
-      npcLine: input.npcLanguage === 'en-US'
-        ? STRINGS['en-US'].customLevelDefaultNpcLine
-        : STRINGS['zh-CN'].customLevelDefaultNpcLine,
-      isCustom: true,
-    };
   }
 
   function getNpcText(levelData, feedback) {
@@ -1051,6 +1325,11 @@
     render();
   }
 
+  function playRainLandingSound() {
+    if (!state.audioEnabled) return;
+    rainAudioEngine.playLanding();
+  }
+
   function playFeedbackSound(kind) {
     if (!state.audioEnabled) return;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -1096,6 +1375,12 @@
         type: 'square',
         frequency: 180,
         duration: 0.09,
+        gain: 0.045,
+      },
+      'rain-hit': {
+        type: 'triangle',
+        frequency: 880,
+        duration: 0.08,
         gain: 0.045,
       },
     };

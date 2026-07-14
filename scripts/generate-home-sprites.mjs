@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync, inflateSync } from 'node:zlib';
@@ -11,7 +11,7 @@ const CROP_SPECS = [
   { name: 'home-brand-icon.png', x: 174, y: 136, width: 118, height: 128 },
   { name: 'button-adventure.png', x: 162, y: 372, width: 202, height: 188 },
   { name: 'button-practice.png', x: 382, y: 372, width: 198, height: 188 },
-  { name: 'button-editor.png', x: 594, y: 372, width: 198, height: 188 },
+  { name: 'button-games.png', x: 594, y: 372, width: 198, height: 188, mode: 'gamesButton' },
   { name: 'icon-sound-on.png', x: 1299, y: 96, width: 88, height: 82 },
   { name: 'icon-sound-off.png', x: 1299, y: 96, width: 88, height: 82, mode: 'soundOff' },
   { name: 'icon-language-en.png', x: 1408, y: 96, width: 90, height: 82, mode: 'languageEn' },
@@ -24,6 +24,30 @@ const CROP_SPECS = [
 ];
 
 const DRAWN_SPRITES = [
+  {
+    name: 'game-animal-floor.png',
+    width: 320,
+    height: 112,
+    cell: 4,
+    draw: 'animalFloor',
+  },
+  { name: 'game-animal-cat.png', width: 80, height: 72, draw: 'animalCat' },
+  { name: 'game-animal-frog.png', width: 80, height: 72, draw: 'animalFrog' },
+  { name: 'game-animal-dog.png', width: 80, height: 72, draw: 'animalDog' },
+  {
+    name: 'game-bomb.png',
+    width: 180,
+    height: 180,
+    cell: 4,
+    draw: 'bomb',
+  },
+  {
+    name: 'game-raindrop.png',
+    width: 96,
+    height: 112,
+    cell: 4,
+    draw: 'raindrop',
+  },
   {
     name: 'bg-cloud-a.png',
     width: 96,
@@ -112,39 +136,11 @@ const DRAWN_SPRITES = [
   },
 ];
 
-const DEPRECATED_SPRITES = [
-  'chest.png',
-  'bg-tree.png',
-  'home-scenery-left.png',
-  'home-scenery-right.png',
-  'icon-sound.png',
-  'icon-language.png',
-  'home-node-1.png',
-  'home-node-2.png',
-  'home-node-3.png',
-  'home-node-4.png',
-  'home-map-preview.png',
-  'home-map-lower.png',
-  'home-node-5.png',
-  'icon-keyboard.png',
-  'icon-pencil.png',
-  'icon-sword.png',
-  'lock.png',
-  'map-node-active.png',
-  'map-node-locked.png',
-  'star.png',
-];
-
 if (!existsSync(sourcePath)) {
   throw new Error(`Missing reference image: ${sourcePath}`);
 }
 
 mkdirSync(outDir, { recursive: true });
-for (const spriteName of DEPRECATED_SPRITES) {
-  const spritePath = join(outDir, spriteName);
-  if (existsSync(spritePath)) unlinkSync(spritePath);
-}
-
 const source = decodePng(readFileSync(sourcePath));
 for (const spec of CROP_SPECS) {
   const crop = cropPixels(source, spec);
@@ -157,6 +153,7 @@ for (const spec of CROP_SPECS) {
   if (spec.mode === 'soundOff') drawSoundOffState(crop);
   if (spec.mode === 'languageEn') drawLanguageBadge(crop, 'EN');
   if (spec.mode === 'languageZh') drawLanguageBadge(crop, 'ZH');
+  if (spec.mode === 'gamesButton') drawGamesButton(crop);
   writeFileSync(join(outDir, spec.name), encodePng(crop));
 }
 for (const spec of DRAWN_SPRITES) {
@@ -180,6 +177,30 @@ function cropPixels(sourceImage, spec) {
 
 function drawPixelSprite(spec) {
   const image = createPixels(spec.width, spec.height);
+  if (spec.draw === 'animalFloor') {
+    drawAnimalFloor(image);
+    return image;
+  }
+  if (spec.draw === 'animalCat') {
+    drawPixelAnimal(image, 12, 0, '#ffd166', '#f4a261', 'cat');
+    return image;
+  }
+  if (spec.draw === 'animalFrog') {
+    drawPixelAnimal(image, 12, 0, '#8ff3c5', '#2f9e44', 'frog');
+    return image;
+  }
+  if (spec.draw === 'animalDog') {
+    drawPixelAnimal(image, 12, 0, '#ff9f68', '#ef476f', 'dog');
+    return image;
+  }
+  if (spec.draw === 'bomb') {
+    drawBomb(image);
+    return image;
+  }
+  if (spec.draw === 'raindrop') {
+    drawRaindrop(image);
+    return image;
+  }
   const cell = spec.cell || 1;
   spec.pixels.forEach((row, rowIndex) => {
     [...row].forEach((key, colIndex) => {
@@ -189,6 +210,129 @@ function drawPixelSprite(spec) {
     });
   });
   return image;
+}
+
+function drawGamesButton(image) {
+  drawRect(image, 54, 28, 92, 96, '#ff7a90');
+  drawRect(image, 46, 56, 106, 52, '#0b1b2d');
+  drawRect(image, 54, 48, 90, 60, '#0b1b2d');
+  drawRect(image, 58, 52, 82, 52, '#e6f7ff');
+  drawRect(image, 62, 56, 74, 44, '#35a7ff');
+  drawRect(image, 70, 68, 24, 8, '#0b1b2d');
+  drawRect(image, 78, 60, 8, 24, '#0b1b2d');
+  drawRect(image, 112, 64, 8, 8, '#ffd166');
+  drawRect(image, 124, 76, 8, 8, '#8ff3c5');
+  drawRect(image, 62, 92, 16, 16, '#0b1b2d');
+  drawRect(image, 120, 92, 16, 16, '#0b1b2d');
+}
+
+function drawAnimalFloor(image) {
+  const ink = '#0b1b2d';
+  drawRect(image, 12, 76, 296, 28, ink);
+  drawRect(image, 20, 68, 280, 28, '#8bdc57');
+  drawRect(image, 20, 88, 280, 16, '#70402f');
+  for (let x = 28; x < 296; x += 32) drawRect(image, x, 88, 16, 8, '#4e2c24');
+  for (let x = 28; x < 296; x += 40) drawRect(image, x, 64, 20, 8, '#b8ef71');
+}
+
+function drawPixelAnimal(image, x, y, face, accent, kind) {
+  const ink = '#0b1b2d';
+  if (kind === 'cat') {
+    drawRect(image, x, y, 16, 16, ink);
+    drawRect(image, x + 40, y, 16, 16, ink);
+  }
+  if (kind === 'dog') {
+    drawRect(image, x - 8, y + 12, 12, 28, accent);
+    drawRect(image, x + 52, y + 12, 12, 28, accent);
+  }
+  drawRect(image, x, y + 8, 56, 48, ink);
+  drawRect(image, x + 4, y + 12, 48, 40, face);
+  if (kind === 'frog') {
+    drawRect(image, x + 4, y, 16, 16, ink);
+    drawRect(image, x + 36, y, 16, 16, ink);
+    drawRect(image, x + 8, y + 4, 8, 8, '#ffffff');
+    drawRect(image, x + 40, y + 4, 8, 8, '#ffffff');
+  }
+  drawRect(image, x + 14, y + 26, 8, 8, ink);
+  drawRect(image, x + 34, y + 26, 8, 8, ink);
+  drawRect(image, x + 24, y + 38, 12, 4, accent);
+  drawRect(image, x + 8, y + 52, 40, 12, ink);
+  drawRect(image, x + 12, y + 52, 32, 8, accent);
+}
+
+function drawBomb(image) {
+  const ink = '#0b1b2d';
+  const body = '#302d2b';
+  const fuse = '#9b6b4b';
+  const bodyRows = [
+    [40, 66, 48], [48, 50, 80], [56, 42, 96], [64, 34, 112],
+    [72, 30, 120], [80, 26, 128], [88, 22, 136], [96, 22, 136],
+    [104, 22, 136], [112, 22, 136], [120, 22, 136], [128, 26, 128],
+    [136, 30, 120], [144, 34, 112], [152, 42, 96], [160, 50, 80],
+    [168, 66, 48],
+  ];
+
+  bodyRows.forEach(([y, x, width]) => drawRect(image, x, y, width, 8, ink));
+  bodyRows.slice(1, -1).forEach(([y, x, width]) => {
+    drawRect(image, x + 8, y, width - 16, 8, body);
+  });
+
+  drawRect(image, 96, 24, 40, 16, ink);
+  drawRect(image, 104, 24, 24, 8, body);
+  drawRect(image, 128, 24, 8, 8, fuse);
+  drawRect(image, 132, 16, 8, 8, fuse);
+
+  [
+    [0, 156, 8], [8, 148, 24], [16, 140, 40],
+    [24, 148, 24], [32, 156, 8],
+  ].forEach(([y, x, width]) => drawRect(image, x, y, width, 8, '#ff4b2b'));
+  [
+    [8, 156, 8], [16, 148, 24], [24, 156, 8],
+  ].forEach(([y, x, width]) => drawRect(image, x, y, width, 8, '#ffd23f'));
+
+  drawRect(image, 42, 80, 8, 8, '#ffffff');
+  drawRect(image, 58, 64, 16, 16, '#ffffff');
+  drawRect(image, 52, 96, 76, 40, '#fff8df');
+  drawRect(image, 60, 104, 60, 24, ink);
+  drawGlyph(image, 68, 108, [
+    '11101110111',
+    '10101010101',
+    '10101010101',
+    '10101010101',
+    '11101110111',
+  ], 4, '#ffd23f');
+}
+
+function drawRaindrop(image) {
+  const ink = '#0b1b2d';
+  const darkWater = '#35a7d8';
+  const water = '#75dff3';
+  const highlight = '#dff8ff';
+
+  drawRect(image, 44, 0, 8, 8, ink);
+  drawRect(image, 40, 8, 16, 8, ink);
+  drawRect(image, 36, 16, 24, 8, ink);
+  drawRect(image, 32, 24, 32, 8, ink);
+  drawRect(image, 28, 32, 40, 8, ink);
+  drawRect(image, 24, 40, 48, 8, ink);
+  drawRect(image, 20, 48, 56, 8, ink);
+  drawRect(image, 16, 56, 64, 8, ink);
+  drawRect(image, 12, 64, 72, 24, ink);
+  drawRect(image, 16, 88, 64, 8, ink);
+  drawRect(image, 24, 96, 48, 8, ink);
+  drawRect(image, 32, 104, 32, 8, ink);
+
+  drawRect(image, 44, 12, 8, 12, highlight);
+  drawRect(image, 40, 20, 16, 12, highlight);
+  drawRect(image, 36, 28, 24, 12, water);
+  drawRect(image, 32, 36, 32, 12, water);
+  drawRect(image, 28, 44, 40, 12, water);
+  drawRect(image, 24, 52, 48, 12, water);
+  drawRect(image, 20, 60, 56, 24, water);
+  drawRect(image, 24, 84, 48, 8, darkWater);
+  drawRect(image, 32, 92, 32, 8, darkWater);
+  drawRect(image, 40, 100, 16, 4, darkWater);
+  drawRect(image, 28, 48, 8, 24, highlight);
 }
 
 function fillCell(image, x, y, size, color) {

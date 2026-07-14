@@ -1,7 +1,4 @@
-import { normalizeCustomLevel } from './levels.js';
-
 const PROGRESS_KEY = 'pixeltype.progress.v1';
-const CUSTOM_LEVELS_KEY = 'pixeltype.customLevels.v1';
 const LANGUAGE_KEY = 'pixeltype.language.v1';
 const AUDIO_KEY = 'pixeltype.audio.v1';
 const UNLOCK_REQUIRED_STARS = 2;
@@ -61,28 +58,6 @@ export function saveLevelResult(storage, levelId, result, orderedLevelIds) {
 
 function shouldUnlockNextLevel(result) {
   return result.passed && (result.stars || 0) >= UNLOCK_REQUIRED_STARS;
-}
-
-export function loadCustomLevels(storage = getBrowserStorage()) {
-  return readJson(storage, CUSTOM_LEVELS_KEY, []);
-}
-
-export function saveCustomLevel(storage, input) {
-  const levels = loadCustomLevels(storage);
-  const saved = normalizeCustomLevel({
-    ...input,
-    id: input.id || `custom-${Date.now()}-${levels.length + 1}`,
-  });
-  const existingIndex = levels.findIndex((level) => level.id === saved.id);
-
-  if (existingIndex >= 0) {
-    levels[existingIndex] = saved;
-  } else {
-    levels.push(saved);
-  }
-
-  storage.setItem(CUSTOM_LEVELS_KEY, JSON.stringify(levels));
-  return saved;
 }
 
 export function loadLanguage(storage = getBrowserStorage()) {
