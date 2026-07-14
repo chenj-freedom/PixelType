@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/platform-browser-45A7E6?style=for-the-badge" alt="Platform: Browser">
   <img src="https://img.shields.io/badge/runtime-local-54C98D?style=for-the-badge" alt="Runtime: Local">
   <img src="https://img.shields.io/badge/languages-ZH%20%7C%20EN-F37F8B?style=for-the-badge" alt="Languages: Chinese and English">
-  <img src="https://img.shields.io/badge/license-not%20specified-9E9E9E?style=for-the-badge" alt="License: Not specified">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0B7FC7?style=for-the-badge" alt="MIT License"></a>
 </p>
 
 <p align="center">
@@ -177,4 +177,4 @@ npm run generate:sprites
 npm run optimize:assets
 ```
 
-仓库当前没有声明开源许可证。需要开放复用或分发权限时，应先由项目所有者选择并添加合适的 `LICENSE` 文件。
+本项目的全部代码和资源均按照 [MIT License](LICENSE) 发布。

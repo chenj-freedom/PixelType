@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "generate:sprites": "node scripts/generate-font-sprites.mjs && node scripts/generate-home-sprites.mjs",
     "optimize:assets": "node scripts/optimize-png-assets.mjs",
