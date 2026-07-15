@@ -1663,6 +1663,7 @@ body.home-art-active .app-shell {
 .result-modal {
   position: fixed;
   inset: 0;
+  z-index: 100;
   background: rgba(31, 41, 51, 0.5);
   display: grid;
   place-items: center;

@@ -1022,6 +1022,19 @@ test('mission practice layout keeps target and input areas in separate flow regi
   assert.match(styleSource, /\.intro-overlay\s*{[\s\S]*z-index:\s*10/);
 });
 
+test('mission result modal stays above the keyboard and in-page overlays', () => {
+  const inputDockStyle = styleSource.match(/\.input-dock\s*\{([^}]*)\}/)?.[1] ?? '';
+  const resultModalStyle = styleSource.match(/\.result-modal\s*\{([^}]*)\}/)?.[1] ?? '';
+  const inputDockZIndex = Number(inputDockStyle.match(/z-index:\s*(\d+)/)?.[1] ?? 0);
+  const resultModalZIndex = Number(resultModalStyle.match(/z-index:\s*(\d+)/)?.[1] ?? 0);
+
+  assert.ok(
+    resultModalZIndex > inputDockZIndex,
+    `result modal z-index ${resultModalZIndex} should exceed input dock z-index ${inputDockZIndex}`,
+  );
+  assert.ok(resultModalZIndex >= 100, 'result modal should reserve a top-level overlay layer');
+});
+
 test('mission practice removes the constant guide bubble while keeping the intro guide icon', () => {
   assert.match(appSource, /<img class="intro-guide-icon" src="assets\/sprites\/home-brand-icon\.png"/);
   assert.doesNotMatch(appSource, /class="npc-sprite small"/);
